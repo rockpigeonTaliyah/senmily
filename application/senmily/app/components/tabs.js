@@ -59,7 +59,9 @@ export default function NavTab(props) {
         {tabs.map((tab, index) => (
           <CustomTabPanel value={value} index={index} key={tab.id}>
 
-
+            if (1==2) {
+              <div></div>
+            }
             <BasicStack api={tab.api}/>
           </CustomTabPanel>
         ))}

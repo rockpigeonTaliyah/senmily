@@ -103,8 +103,8 @@ export default function VerticalTabs() {
             label : "框架",
             href : "asdf",
             api : {
-              uri : "/api/mode",
-              type : "image"
+              uri : "/api/frame",
+              type : "frame"
             }
           },
           {
