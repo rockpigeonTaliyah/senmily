@@ -1,5 +1,6 @@
 
 import PropTypes from 'prop-types';
+import DraggableIcons from './draggable';
 
 import { Container ,Typography, Paper, Box} from '@mui/material';
 import { useState, useEffect } from 'react'
@@ -98,14 +99,16 @@ export default function ReviewPaper(props) {
 
     return (
         <Container sx={{display:'flex'}}>
-            <Paper style={styles.paperContainer} sx={{backgroundImage: `url(${sharedState})`,position:"relative"}}>
+            <Paper style={styles.paperContainer} sx={{backgroundImage: `url(${sharedState})`,position:"relative",}}>
             <div style={styles.overlayFrame}>
                 <div style={styles.circlefirst}></div>
                 <div style={styles.circlesecond}></div>
                 <div style={styles.circlethird}></div>
                 <div style={styles.circleforth}></div>
             </div>
+            <DraggableIcons sx={{background:"orange"}}/>
             </Paper>
+
         </Container>
     );
   }

@@ -6,7 +6,6 @@ import { styled } from '@mui/material/styles';
 import { useState, useEffect } from 'react'
 import React, { useContext } from 'react';
 import { StateContext , FrameContext } from '../context';
-import DraggableIcons from './draggable';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -54,7 +53,7 @@ export default function BasicStack(props) {
   return (
     <Box sx={{ width: '100%' }}>
       {api.type =="image" &&
-      <Stack spacing={2} sx={{overflow:"scroll",height:'80vh'}}>
+      <Stack spacing={2} sx={{overflowY:"scroll",overflowX:"hidden",height:'80vh'}}>
       {data.map(function(d,i){return (<Item
       key={i}
         onClick={(e) => handleImageClick(e, d.content, "/about")}>
@@ -183,7 +182,7 @@ export default function BasicStack(props) {
       {data.map(function(d,i){return (<Item
       key={i}
         onClick={(e) => handleImageClick(e, d.content, "/about")}>
-          <DraggableIcons/>
+
         </Item>)})}
       </Stack>}
 
