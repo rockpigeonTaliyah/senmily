@@ -1,4 +1,4 @@
-import * as React from 'react';
+
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -6,6 +6,13 @@ import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import BasicStack from  './options';
 import Typography from '@mui/material/Typography';
+
+import React from 'react';
+
+// import { useState, useEffect, useContext } from "react";
+// import { SharedStateContext } from "@/template/sharedContext";
+// import { useEffect, useContext } from "react";
+
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
 
@@ -50,7 +57,7 @@ export default function NavTab(props) {
     return (
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs  value={value} onChange={handleChange} aria-label="basic tabs example" sx={{minWidth:"300px"}}>
+          <Tabs  value={value} onChange={handleChange} aria-label="basic tabs example" sx={{minWidth:"280px"}}>
             {tabs.map((tab, index) => (
                 <Tab label={tab.label} key={tab.id} {...a11yProps(index)}/>
             ))}
@@ -59,9 +66,9 @@ export default function NavTab(props) {
         {tabs.map((tab, index) => (
           <CustomTabPanel value={value} index={index} key={tab.id}>
 
-            if (1==2) {
-              <div></div>
-            }
+
+              {/* <div></div> */}
+
             <BasicStack api={tab.api}/>
           </CustomTabPanel>
         ))}
