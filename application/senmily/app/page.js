@@ -12,11 +12,12 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import ReviewPaper from './components/reviewpaper';
 
 import React, { useContext } from 'react';
-import { StateContext } from './context';
+import { StateContext, FrameContext } from './context';
 
-import { StateProvider } from './context';
+import { StateProvider, FrameProvider } from './context';
 
 
 const styles = {
@@ -73,7 +74,7 @@ function a11yProps(index) {
 
 export default function VerticalTabs() {
   const [value, setValue] = React.useState(0);
-  const { sharedState } = useContext(StateContext);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -81,6 +82,8 @@ export default function VerticalTabs() {
   return (
     <main sx={{display:'flex'}}>
       <StateProvider>
+      <FrameProvider>
+
 
     <Box
       sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height:"100vh",minWidth:"fit-content" }}
@@ -149,7 +152,7 @@ export default function VerticalTabs() {
             href : "asdf",
             api : {
               uri : "/api/family",
-              type : "image"
+              type : "draggable"
             }
           }
         ]}
@@ -172,7 +175,7 @@ export default function VerticalTabs() {
             href : "asdf",
             api : {
               uri : "/api/family",
-              type : "image"
+              type : "draggable"
             }
           }
         ]}></NavTabs>
@@ -199,10 +202,9 @@ export default function VerticalTabs() {
           }
         ]}></NavTabs>
       </TabPanel>
-      <Container sx={{display:'flex'}}>
-      <Paper style={styles.paperContainer}></Paper>
-      </Container>
+      <ReviewPaper />
     </Box>
+    </FrameProvider>
     </StateProvider>
     </main>
   );
