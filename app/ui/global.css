@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+
+html{
+  font-size: initial;
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -47,5 +52,34 @@ input[type='number']::-webkit-outer-spin-button {
   top :0;
   .wavesvg {
     stroke: none; fill:#f2d229;
+  }
+}
+
+
+.shelf {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  padding:1rem;
+}
+
+.block {
+  /* border: 1px solid black; */
+  padding: 10px;
+}
+
+.book-cover{
+  /* border: 1px solid black; */
+  border-radius: 6px;
+  height: 200px;
+  width: 150px;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  box-shadow: 1px 1px 10px grey;
+  &:hover{
+    transform: translateY(-10px);
+    transition: 0.1s ease-in-out;
   }
 }

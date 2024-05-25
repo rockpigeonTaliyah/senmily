@@ -1,43 +1,119 @@
-// import AcmeLogo from '@/app/ui/acme-logo';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-// import styles from '@/app/ui/home.module.css';
-// import { lusitana } from '@/app/ui/fonts';
-import Image from 'next/image';
-import SideNav from './ui/navbar/page';
+ // import Font Awesome CSS
+ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+ import { faCheck, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Button } from '@nextui-org/react';
+
 
 
 export default function Page() {
   return (
-    
-    <main className="flex min-h-screen flex-col h-100">
-      <div className="bg-yellow-100 flex-row flex m-w-screen justify-between ">
-        <p>logo</p>
-        <SideNav/>
-      </div>
-      
-      <div className="flex flex-col grow ">
+    <main className='h-full flex flex-col'>
+      <div className="flex flex-col flex-1">
         <div className="wave grow-0">
           <svg viewBox="0 0 500 500" preserveAspectRatio="xMinYMin meet">
             <path d="M0,200 C200,300 400,100 500,100 L500,00 L0,0 Z" className='wavesvg'></path>
           </svg>
         </div>
-        <div className="flex flex-row grow-0" style={{position: 'relative'}}>
-          <div className="container flex-1 px-4 flex flex-col">
-            <h1 className="bold title">那實共做七天下會里幾往占昔口，起亭四比首他火</h1>
-            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged</p>
-            <a href="#" className="btn btn-primary bg-white py-1 rounded-full px-4 w-fit">乍告羊姊</a>
+        <div className="flex flex-row " style={{position: 'relative'}}>
+          <div className="container flex-1 px-4 flex flex-col" style={{padding:"1rem"}}>
+            <p
+            
+            className="bold"
+            style={{
+              fontSize:"3rem",
+              fontWeight:"bold"
+            }}>一起製作</p>
+
+            <p
+            
+            className="bold"
+            style={{
+              fontSize:"3rem",
+              fontWeight:"bold"
+            }}>屬於你和孩子的</p>
+            <p
+            
+            className="bold"
+            style={{
+              fontSize:"3rem",
+              fontWeight:"bold"
+            }}>專屬繪本</p>
+
+              <p 
+                className="flex-1"
+                style={{
+                  fontSize:"1.5rem",
+                  paddingBottom: "1rem"
+                }}
+              >
+              我們相信每個孩子都是獨特的,擁有自己的想像力,透過這個工具,你將有機會獲得屬於一個你和孩子的專屬繪本,與小朋友一同學習探索和成長
+              </p>
+            
+            <Button 
+              variant='shadow'
+              href="#" 
+              className="btn btn-primary bg-white p2-1 rounded-full px-4 w-fit"
+              style={{padding:"1rem 3rem",fontWeight:"bold"}}
+              >立即製作</Button>
           </div>
-          <div className="flex-1">
-            <div className="block circle h-auto w-80 rounded-full bg-black"></div>
+          <div className="flex-1 flex center">
+            <div className="block circle h-auto w-80 rounded-full bg-black m-auto"></div>
           </div>
         </div>
-        <div className='w-full h-auto grow flex' style={{}}>
-          <h1><span>Library</span></h1>
-        </div>  
+      </div>
+
+      
+      <p 
+
+                style={{
+                  fontSize:"1.5rem",
+                  fontWeight:"bold",
+
+                  paddingLeft: "1rem"
+                }}
+              >
+          我的書櫃
+      </p>
+
+      
+      <div className="shelf">
+        <div className="block">
+        
+           {/* <a > */}
+           <Link
+           className='book-cover justify-content-center flex align-items-center'
+            href={{
+              pathname: '/creator'
+            }}
+          >
+            <FontAwesomeIcon icon={faPlus} className="fas fa-check" style={{ fontSize :"3rem" }}></FontAwesomeIcon>
+            </Link>
+            
+           {/* </a> */}
+        </div>
+        <div className="block">
+        <div className='book-cover justify-content-center flex align-items-center'>
+           <FontAwesomeIcon icon={faPlus} className="fas fa-check" style={{ fontSize :"3rem" }}></FontAwesomeIcon>
+           </div>
+        </div>
+        <div className="block">
+        <div className='book-cover justify-content-center flex align-items-center'>
+           <FontAwesomeIcon icon={faPlus} className="fas fa-check" style={{ fontSize :"3rem" }}></FontAwesomeIcon>
+           </div>
+        </div>
+        <div className="block">
+        <div className='book-cover justify-content-center flex align-items-center'>
+           <FontAwesomeIcon icon={faPlus} className="fas fa-check" style={{ fontSize :"3rem" }}></FontAwesomeIcon>
+           </div>
+        </div>
+        <div className="block">
+        <div className='book-cover justify-content-center flex align-items-center'>
+           <FontAwesomeIcon icon={faPlus} className="fas fa-check" style={{ fontSize :"3rem" }}></FontAwesomeIcon>
+           </div>
+        </div>
       </div>
       
-      
-    </main>
+      </main>
   );
 }
