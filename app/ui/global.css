@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-
+img:hover{
+  cursor: pointer;
+}
 html{
   font-size: initial;
 }

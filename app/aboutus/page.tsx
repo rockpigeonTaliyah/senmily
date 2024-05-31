@@ -16,7 +16,7 @@ export default function Page() {
           </svg>
         </div>
         <div className="flex flex-row " style={{position: 'relative'}}>
-          <div className="container flex-1 px-4 flex flex-col" style={{padding:"1rem",paddingLeft:"5rem"}}>
+          <div className="container flex-1 px-4 flex flex-col" style={{padding:"1rem"}}>
             <p
             
             className="bold"
@@ -69,14 +69,15 @@ export default function Page() {
                 style={{
                   fontSize:"1.5rem",
                   fontWeight:"bold",
-                  paddingLeft:"5rem"
+
+                  paddingLeft: "1rem"
                 }}
               >
           我的書櫃
       </p>
 
       
-      <div className="shelf" style={{paddingLeft:"5rem"}}>
+      <div className="shelf">
         <div className="block">
         
            {/* <a > */}

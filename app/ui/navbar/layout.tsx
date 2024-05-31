@@ -17,26 +17,26 @@ import clsx from 'clsx';
 const links = [
   { 
     name: '首頁', 
-    href: '/asd', 
+    href: '/', 
     icon: HomeIcon 
   },
   { 
     name: '製作繪本', 
-    href: '/dashboard', 
+    href: '/creator', 
     icon: CubeIcon 
   },
   {
     name: '學習進度',
-    href: '/dashboard/invoices',
+    href: '/progress',
     icon: ChartBarIcon,
   },
   { 
     name: '關於我們', 
-    href: '/dashboard/customers', 
+    href: '/aboutus', 
     icon: UserGroupIcon 
   },
   { 
-    name: '', 
+    name: '帳戶', 
     href: '/dashboard/customers', 
     icon: UserIcon 
   },

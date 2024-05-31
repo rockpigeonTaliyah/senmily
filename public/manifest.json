@@ -1,0 +1,19 @@
+{
+    "id": "senmily",
+    "name": "Senmily Book Creator",
+    "short_name": "Senmily",
+    "description": "This  app is a PWA.",
+    "icons": [
+      {
+        "src": "./favicon.ico",
+        "sizes": "48x48",
+        "type": "image/x-icon"
+      }
+    ],
+    "theme_color": "#FFFFFF",
+    "background_color": "#FFFFFF",
+    "start_url": "/",
+    "scope": ".",
+    "display": "standalone",
+    "orientation": "landscape"
+  }
