@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useImperativeHandle,
+  forwardRef
+} from 'react';
 import { Image } from "@nextui-org/react";
 import useEmblaCarousel from 'embla-carousel-react';
-import { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
-import {
-  NextButton,
-  PrevButton,
-  usePrevNextButtons,
-} from './EmblaCarouselArrowButtons';
-import DraggableArea from '@/app/ui/dnd/DraggableArea';
+import { NextButton, PrevButton, usePrevNextButtons } from './EmblaCarouselArrowButtons';
+import DraggableArea, { DraggableAreaHandles } from '@/app/ui/dnd/DraggableArea';
 import { PageConfig, Mission } from '@/type/Page';
 import "./embla.css";
 
@@ -16,25 +18,32 @@ type PropType = {
     page_config: PageConfig[];
   };
   onChange: (selectedIndex: number) => void;
-  onItemsChange: (pageIndex: number, updatedItems: Mission[]) => void;
-  options?: EmblaOptionsType;
+  onItemsChange: (pageIndex: number, updatedItems: Mission) => void;
 };
 
-const EmblaCarousel: React.FC<PropType> = (props) => {
-  const { slides, options, onChange, onItemsChange } = props;
+export type EmblaCarouselHandles = {
+  updateSlideItemsAttributes: (index: number, attributes: Partial<Mission>[]) => void;
+};
+
+const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) => {
+  const { slides, onChange, onItemsChange } = props;
   const slidesCount = slides.page_config.length;
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: "x",
-    skipSnaps: false,
-    ...options,
+    skipSnaps: false
   });
 
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [draggableRefs, setDraggableRefs] = useState<React.RefObject<DraggableAreaHandles>[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
 
-  const onScroll = useCallback((embla: EmblaCarouselType) => {
+  const onScroll = useCallback((embla) => {
     const progress = Math.max(0, Math.min(1, embla.scrollProgress()));
-    onChange(embla.selectedScrollSnap());
+    const selected = embla.selectedScrollSnap();
+    onChange(selected);
+    setSelectedIndex(selected);
     setScrollProgress(progress * 100);
   }, [onChange]);
 
@@ -49,23 +58,37 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
 
   const handleDragStart = () => {
     if (emblaApi) {
-      emblaApi.reInit({ watchDrag: false })
+      emblaApi.reInit({ watchDrag: false });
     }
   };
 
   const handleDragEnd = () => {
-    
     if (emblaApi) {
-      emblaApi.reInit({ watchDrag: true })
+      emblaApi.reInit({ watchDrag: true });
     }
   };
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const handleExportResult = useCallback((index, result) => {
+    console.log("taert");
+    // onItemsChange(index, result);
+  }, [onItemsChange]);
+  const onMissionUpdate= useCallback((index, result) => {
+    console.log("taert");
+    onItemsChange(index, result);
+  }, [onItemsChange]);
+  useEffect(() => {
+    // Initialize refs array with the correct length
+    setDraggableRefs(slides.page_config.map(() => React.createRef<DraggableAreaHandles>()));
+  }, [slides.page_config.length]);
 
-  const handleExportResult = useCallback((result) => {
-    onItemsChange(selectedIndex, result);
-  }, [selectedIndex, onItemsChange]);
-
+  useImperativeHandle(ref, () => ({
+    updateSlideItemsAttributes: (index: number, attributes: Partial<Mission>[]) => {
+      if (draggableRefs[index] && draggableRefs[index].current) {
+        draggableRefs[index].current.updateItemsAttributes(attributes);
+      }
+    }
+  }));
+  
   return (
     <div className="embla">
       <div className="embla__viewport" ref={emblaRef}>
@@ -74,11 +97,13 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             <div className="embla__slide" key={index}>
               <div className="embla__slide__number">
                 <DraggableArea
+                  ref={draggableRefs[index]}
+                  key={`draggable-${index}`}
                   items={value.missions}
-                  onExport={handleExportResult}
+                  onExport={(result) => handleExportResult(index, result)}
+                  onMissionUpdate={(item)=>{onMissionUpdate(index,item)}}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
-                  onItemsChange={(updatedItems) => onItemsChange(index, updatedItems)}
                 >
                   <Image
                     removeWrapper
@@ -110,6 +135,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
       </div>
     </div>
   );
-};
+});
+
+EmblaCarousel.displayName = 'EmblaCarousel';
 
 export default EmblaCarousel;

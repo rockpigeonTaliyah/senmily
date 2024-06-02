@@ -10,25 +10,28 @@ export type Mode = {
   image: string;
 };
 export type Mission = {
-  id: string;
-  target:string;
-  initialPosition?: { x: number; y: number };
-  frame: string;
+  mid: number;
+  cid: number[];
+  target: string;
   text: string;
+  image: string;
+  id: string;
+  initialPosition: { x: number; y: number };
+  frame: string;
 };
 
 export type PageConfig = {
-  framework: string | null;
-  mode: number | null;
-  user_image: string | null;
+  framework: any;
+  mode: number;
+  user_image: any;
   image: string;
   missions: Mission[];
 };
 
 export type Book = {
-  bid: number | null;
+  bid: number;
   title: string;
   coverImage: string;
-  pages: Page[];
+  pages: { modes: { id: number; image: string; }[]; }[];
   page_config: PageConfig[];
 };

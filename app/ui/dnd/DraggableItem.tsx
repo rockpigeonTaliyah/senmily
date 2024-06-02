@@ -1,10 +1,10 @@
 'use client';
-import React from 'react';
+import React,{useRef} from 'react';
 import { useDraggable } from '@dnd-kit/core';
-
+import { v4 as uuidv4 } from 'uuid';
 function DraggableItem({ id, children, initialPosition, containerRef ,frame}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
-
+  const uniqueId = useRef(`DndDescribedBy-${uuidv4()}`).current;
   const containerRect = containerRef?.current?.getBoundingClientRect();
   const initialX = initialPosition?.x || 0;
   const initialY = initialPosition?.y || 0;
@@ -28,20 +28,12 @@ function DraggableItem({ id, children, initialPosition, containerRef ,frame}) {
 
   const style = {
     transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
-    // touchAction: 'none',
-    // backgroundSize: 'cover',
-    // backgroundRepeat: "no-repeat",
-    // wordBreak: "break-all",
     backgroundImage:`url(${frame})`,
     aspectRatio:"4 / 3",
-    // width:"10rem",
-    // display: "flex",
-    // justifyContent: "center",
-    // alignItems: "center",
   };
 
   return (
-    <div ref={setNodeRef} className="absolute w-[10rem] flex justify-center touch-none items-center bg-cover bg-no-repeat break-all" style={style} {...attributes} {...listeners} >
+    <div ref={setNodeRef}  id={id} className="absolute w-[10rem] flex justify-center touch-none items-center bg-cover bg-no-repeat break-all" style={style} {...attributes} {...listeners} >
       {children}
     </div>
   );

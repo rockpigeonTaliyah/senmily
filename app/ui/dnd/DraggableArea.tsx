@@ -4,34 +4,30 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useCallback,
+  useCallback
 } from 'react';
 import {
   DndContext,
   useSensors,
   useSensor,
-  PointerSensor,
+  PointerSensor
 } from '@dnd-kit/core';
 import DraggableItem from './DraggableItem';
 import EditableDiv from './EditableDiv';
-import { PageConfig, Mission } from '@/type/Page';
+import { Mission } from '@/type/Page';
 
 type DraggableAreaProps = {
   children: React.ReactNode;
   items: Mission[];
-  onMouseDown?: () => void;
-  onMouseUp?: () => void;
-  onTouchStart?: () => void;
-  onTouchEnd?: () => void;
   onExport?: (result: Mission[]) => void;
-  onTextChange?: (id: string, newText: string) => void;
-  onItemsChange?: (updatedItems: Mission[]) => void;
-  onDragStart?:any;
-  onDragEnd?:any;
+  onMissionUpdate ?: (item:any) => void;
+  onDragStart?: any;
+  onDragEnd?: any;
 };
 
 export type DraggableAreaHandles = {
   handleExport: () => void;
+  updateItemsAttributes: (attributes: Partial<Mission>[]) => void;
 };
 
 const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
@@ -40,12 +36,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
       children,
       items,
       onExport,
-      onMouseDown,
-      onMouseUp,
-      onTouchStart,
-      onTouchEnd,
-      onTextChange,
-      onItemsChange,
+      onMissionUpdate,
       onDragStart,
       onDragEnd
     },
@@ -88,26 +79,60 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
 
     const handleExport = useCallback(() => {
       const result = items.map((item) => ({
-        ...item, // Spread all existing properties of `item`
-        text: texts[item.id], // Override the `text` property
-        initialPosition: positions[item.id], // Override the `position` property
+        ...item,
+        text: texts[item.id],
+        initialPosition: positions[item.id]
       }));
 
       if (onExport) {
         onExport(result);
       }
     }, [items, texts, positions, onExport]);
-    const ParentHandleDragEnd = onDragEnd;
+
+    const updateItemsAttributes = (attributes: Partial<Mission>[]) => {
+      setPositions((prevPositions) => {
+        const updatedPositions = { ...prevPositions };
+        attributes.forEach(attr => {
+          if (attr.id && attr.initialPosition) {
+            updatedPositions[attr.id] = attr.initialPosition;
+          }
+        });
+        return updatedPositions;
+      });
+
+      setTexts((prevTexts) => {
+        const updatedTexts = { ...prevTexts };
+        attributes.forEach(attr => {
+          if (attr.id && attr.text) {
+            updatedTexts[attr.id] = attr.text;
+          }
+        });
+        return updatedTexts;
+      });
+
+      handleExport();
+    };
+
+    useImperativeHandle(ref, () => ({
+      handleExport,
+      updateItemsAttributes,
+    }));
+
+    const ParentHandleDragEnd = useCallback((event) => {
+      onDragEnd && onDragEnd(); // call parent's onDragEnd if defined
+    }, [onDragEnd]);
+
     const SelfhandleDragEnd = useCallback(
       (event: any) => {
-        ParentHandleDragEnd();
+        ParentHandleDragEnd(event);
+
         const { id } = event.active;
         const { delta } = event;
 
         setPositions((prevPositions) => {
           const newPosition = {
             x: Math.max(0, prevPositions[id].x + delta.x),
-            y: Math.max(0, prevPositions[id].y + delta.y),
+            y: Math.max(0, prevPositions[id].y + delta.y)
           };
           const containerRect = containerRef.current!.getBoundingClientRect();
           const itemWidth = 100; // consider making this dynamic or passing it as a prop
@@ -115,45 +140,42 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
 
           newPosition.x = Math.min(
             newPosition.x,
-            containerRect.width - itemWidth,
+            containerRect.width - itemWidth
           );
           newPosition.y = Math.min(
             newPosition.y,
-            containerRect.height - itemHeight,
+            containerRect.height - itemHeight
           );
 
           return { ...prevPositions, [id]: newPosition };
         });
+
         handleExport();
       },
-      [handleExport],
-    );
-
-    const handleTextChange = useCallback(
-      (id: string, newText: string) => {
-        setTexts((prevTexts) => {
-          const updatedTexts = { ...prevTexts, [id]: newText };
-          return updatedTexts;
-        });
-        if (onTextChange) {
-          onTextChange(id, newText);
-        }
-      },
-      [onTextChange],
+      [ParentHandleDragEnd, handleExport]
     );
 
     const sensors = useSensors(
       useSensor(PointerSensor, {
         activationConstraint: {
           distance: 1,
-        },
-      }),
+        }
+      })
     );
-
-    useImperativeHandle(ref, () => ({
-      handleExport,
-    }));
-
+    const onUpdate = (e,id,target,frame,position) => {
+      onMissionUpdate({
+        id : id,
+        target : target,
+        frame : frame,
+        initialPosition : position,
+        text : e.target.innerText,
+      })
+      console.log("Area reciveed",e.target.innerText);
+      console.log("Area reciveed",target);
+      console.log("Area reciveed",frame);
+      console.log("Area reciveed",position);
+      console.log("id",id);
+    }
     return (
       <DndContext sensors={sensors} onDragEnd={SelfhandleDragEnd} onDragStart={onDragStart}>
         <div
@@ -177,17 +199,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
             >
               <EditableDiv
                 text={texts[item.id]}
-                setText={(newText: string) =>
-                  handleTextChange(item.id, newText)
-                }
-                onMouseDown={(e: React.PointerEvent<HTMLDivElement>) => {
-                  if (onMouseDown) onMouseDown();
-                   e.stopPropagation();
-                }}
-                onMouseUp={(e: React.PointerEvent<HTMLDivElement>) => {
-                  if (onMouseUp) onMouseUp();
-                   e.stopPropagation();
-                }}
+                textUpdate={(e: React.PointerEvent<HTMLDivElement>)=>{onUpdate(e,item.id,item.target,item.frame,positions[item.id])}}
               />
             </DraggableItem>
           ))}
