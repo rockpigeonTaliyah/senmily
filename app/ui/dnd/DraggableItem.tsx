@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 
-function DraggableItem({ id, children, initialPosition, containerRef }) {
+function DraggableItem({ id, children, initialPosition, containerRef ,frame}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
 
   const containerRect = containerRef?.current?.getBoundingClientRect();
@@ -28,12 +28,20 @@ function DraggableItem({ id, children, initialPosition, containerRef }) {
 
   const style = {
     transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
-    touchAction: 'none',
-    position: 'absolute',
+    // touchAction: 'none',
+    // backgroundSize: 'cover',
+    // backgroundRepeat: "no-repeat",
+    // wordBreak: "break-all",
+    backgroundImage:`url(${frame})`,
+    aspectRatio:"4 / 3",
+    // width:"10rem",
+    // display: "flex",
+    // justifyContent: "center",
+    // alignItems: "center",
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} className="absolute w-[10rem] flex justify-center touch-none items-center bg-cover bg-no-repeat break-all" style={style} {...attributes} {...listeners} >
       {children}
     </div>
   );

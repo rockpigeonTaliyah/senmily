@@ -1,4 +1,5 @@
 
+
 .Palette{
     width : 100%;
     height: 100%;
@@ -9,10 +10,10 @@
         transition: 0.1s ease-in-out;
         &:hover{
             cursor:pointer;
-            color: theme('colors.primary')
+            color: colors.primary;
         }
         &.highlighted {
-            color: theme('colors.primary');
+            color: colors.primary;
             
             background: #383838;
         }

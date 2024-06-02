@@ -31,13 +31,10 @@ const config: Config = {
     },
   },
   darkMode: "class",
-
+  snapshotSerializers: ['jest-postcss'],
   plugins: [
     require('@tailwindcss/forms'),
-    nextui()
-
-    
-    
+    nextui() 
   ],
 };
 export default config;

@@ -2,228 +2,254 @@
 import styles from './creator.module.css'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
-    faPalette,
-    faPeopleRoof,
-    faChildReaching,
-    faWandMagicSparkles,
-    faWrench,
-    faFloppyDisk,
-    faShare
- } from "@fortawesome/free-solid-svg-icons";
+    faPalette, faPeopleRoof, faChildReaching,
+    faWandMagicSparkles, faFloppyDisk, faShare
+} from "@fortawesome/free-solid-svg-icons";
 
- import { usePathname } from 'next/navigation'
-
- import {Link,Tabs, Tab,Card, CardHeader, CardBody, CardFooter, Image, NextUIProvider, ScrollShadow, ThemeColors,Button} from "@nextui-org/react";
- import jsPDF from 'jspdf';
- import html2canvas from 'html2canvas';
+import { v4 as uuidv4 } from 'uuid';
+import { Link, Card, CardHeader, Image, NextUIProvider, ScrollShadow, Button } from "@nextui-org/react";
+import { Tabs, Tab } from "@nextui-org/tabs";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import EmblaCarousel from '@/app/ui/carousel/EmblaCarousel'
-import React from 'react';
-import { Page } from '@/type/Page';
+import React, { useState, useCallback } from 'react';
+import { PageConfig, Mission } from '@/type/Page';
 
+export default function Page() {
+  const [parent_mission_selectKey, set_parent_mission_selectKey] = useState("0");
+  const [children_mission_selectKey, set_children_mission_selectKey] = useState("0");
+  const [focusMission, setFocusMission] = useState({});
+  const [book, setBook] = useState({
+    bid: null,
+    title: "",
+    coverImage: "",
+    pages: [{ modes: [{ id: 0, image: "https://nextui.org/images/card-example-1.jpeg" }] }],
+    page_config: [{ framework: "bottom", mode: null, user_image: null, image: "", missions: [] }],
+  });
+  const [currentSlide, setCurrentSlide] = useState(0);
 
- export default function Page()  {
-    const pathname = usePathname()
-    const [book, setBook] = React.useState({
-        bid : null,
-        title : "",
-        coverImage : "",
-        pages : [
-            {
-                modes :[
-                    {
-                        id : 0,
-                        image :"https://nextui.org/images/card-example-1.jpeg"
-                    }
-                ]
-            }
-        ],
-        page_config : [
-            {
-                
-                "framework": "bottom",
-                "mode": null,
-                "user_image": null,
-                "image" : "", 
-                "missions": [{text:"+"}]
-            }
-        ]
-    });
-    var BookRef = {};
-    const UpdateBook  = (e:any,book:any) => {
-        setBook(original_book => ({
-          ...original_book,
-            bid:book.bid ,
-            title : "",
-            coverImage : book.coverImage,
-            pages : book.pages,
-            page_config : book.pages.map((page: any) => {
-            return {
-                "framework": null,
-                "mode": 0,
-                "user_image": null,
-                "image" : page.modes[0].image, 
-                "missions": [{text:"+"}]
-            }
-            },)
-        }));
-    }
-    const [Frame, setFrame] = React.useState(null);
-    const UpdateFramework = (frame:any)=>{
-        console.log("Update Frame",frame)
-        console.log("Current Slide : ",currentSlide);
-        var new_book = book;
-        new_book.page_config[currentSlide].framework = frame;
-        // setBook(new_book)
-        setBook(prevBook => ({
-            ...prevBook,
-            page_config: prevBook.page_config.map((config, index) =>
-              index === currentSlide ? { ...config, framework: frame } : config
-            ),
-          }));
-    }
-    const [Mode, setMode] = React.useState(null);
-    const UpdateMode = (mode:any)=>{
-        var new_book = book;
-        new_book.page_config[currentSlide].mode = mode
-        setBook(prevBook => ({
-            ...prevBook,
-            page_config: prevBook.page_config.map((config, index) =>
-              index === currentSlide ? { ...config, mode: mode, image:prevBook.pages[currentSlide].modes[mode].image } : config
-            ),
-          }));
-    }
-    const [Mission, setMission] = React.useState([]);
-    const UpdateMission = (mission:any)=>{
-        console.log("Current Missions",book.page_config[currentSlide].missions);
-        const emptyIndexes = book.page_config[currentSlide].missions.reduce((acc:Array<any>, item, index) => {
-            if (item.text && item.text === "+") {
-              acc.push(index);
-            }
-            return acc;
-          }, []);
-          var missions =book.page_config[currentSlide].missions;
-          const res: boolean = missions
-            .map(obj => JSON
-                .stringify(obj))
-            .includes(JSON.stringify(mission));
-          if(res){
-            console.log("mission already in !")
-          }
-          console.log("Missions", missions);
-          emptyIndexes.length != 0 && (missions[emptyIndexes[0]] = mission);
-        setBook(prevBook => ({
-            ...prevBook,
-            page_config: prevBook.page_config.map((config, index) =>
-              index === currentSlide ? { ...config, missions:missions} : config
-            ),
-          }));
-    }
-    const [currentSlide, setCurrentSlide] = React.useState(0);
-    const handleSlideChange = (index:any) => {
-        console.log(index)
-        console.log("testing");
+  const UpdateBook = (e: any, book: any) => {
+    setBook((originalBook) => ({
+      ...originalBook,
+      bid: book.bid,
+      title: "",
+      coverImage: book.coverImage,
+      pages: book.pages,
+      page_config: book.pages.map((page: any) => ({
+        framework: null,
+        mode: 0,
+        user_image: null,
+        image: page.modes[0].image,
+        missions: [],
+      })),
+    }));
+  };
 
-        setCurrentSlide(index);
+  const UpdateFramework = (frame: any) => {
+    setBook((prevBook) => ({
+      ...prevBook,
+      page_config: prevBook.page_config.map((config, index) =>
+        index === currentSlide ? { ...config, framework: frame } : config
+      ),
+    }));
+  };
+
+  const UpdateMode = (mode: any) => {
+    setBook((prevBook) => ({
+      ...prevBook,
+      page_config: prevBook.page_config.map((config: any, index) =>
+        index === currentSlide ? { ...config, mode, image: prevBook.pages[currentSlide].modes[mode].image } : config
+      ),
+    }));
+  };
+
+  const UpdateMission = (mission: Mission) => {
+    if (mission.target === "parent") set_parent_mission_selectKey("2");
+    if (mission.target === "child") set_children_mission_selectKey("2");
+
+    setFocusMission({ ...mission, initialPosition: { x: 0, y: 0 } });
+  };
+
+  const UpdateOuterFrame = (outerframe: any) => {
+    if (Object.keys(focusMission).length === 0) return;
+
+    const updatedFocusMission = {
+      ...focusMission,
+      frame: outerframe,
     };
-    const [page, setPage] = React.useState("creator");
-    const [parent_tab, setParentTab] = React.useState(0);
-    const [child_tab, setChildTab] = React.useState(0);
-    const [category,setCateory] = React.useState(0);
-    const UpdateCategory = (categ:any)=>{
-        setCateory(categ);
-    }
-    return (
-        <NextUIProvider style={{height:"100%"}}>
+
+    const missions = [...book.page_config[currentSlide].missions, updatedFocusMission];
+
+    setBook((prevBook) => ({
+      ...prevBook,
+      page_config: prevBook.page_config.map((config, index) =>
+        index === currentSlide ? { ...config, missions } : config
+      ),
+    }));
+    setFocusMission({})
+  };
+
+  const handleItemsChange = useCallback((pageIndex: number, updatedItems: Mission[]) => {
+    setBook((prevBook) => ({
+      ...prevBook,
+      page_config: prevBook.page_config.map((config, index) =>
+        index === pageIndex ? { ...config, missions: updatedItems } : config
+      ),
+    }));
+  }, []);
+
+  const handleSlideChange = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const [page, setPage] = useState("creator");
+  const [parent_tab, setParentTab] = useState(0);
+  const [child_tab, setChildTab] = useState(0);
+  const [category, setCategory] = useState(0);
+
+  const UpdateCategory = (categType: any, categ: any) => {
+    if (categType === "parent") { set_parent_mission_selectKey("1"); }
+    if (categType === "child") { set_children_mission_selectKey("1"); }
+    setCategory(categ);
+  };
+
+  const saveBook = () => {
+    console.log("final book:", JSON.stringify(book));
+  };
+
+  return (
+    <NextUIProvider style={{ height: "100%" }}>
       <main className={styles.Palette}>
-        {/* <div  > */}
-            <div style={{
-                background:"#696969",
-                display:"flex",
-                flexDirection:"column",
-                textAlign: "center"
-            }}>
-                <div className={`${styles.item} ${page =="creator" && styles.highlighted}`} onClick={()=>setPage("creator")}>
-                    <FontAwesomeIcon icon={faPalette} className="fas fa-check"></FontAwesomeIcon>
-                    <span>製作繪本</span>
-                </div>
-                <div className={`${styles.item} ${page =="parentMission" && styles.highlighted}`} onClick={()=>setPage("parentMission")}>
-                    <FontAwesomeIcon icon={faPeopleRoof} className="fas fa-check"></FontAwesomeIcon>
-                    <span>家長任務</span>
-                </div>
-                <div className={`${styles.item} ${page =="childMission" && styles.highlighted}`} onClick={()=>setPage("childMission")}>
-                    <FontAwesomeIcon icon={faChildReaching} className="fas fa-check"></FontAwesomeIcon>
-                    <span>孩子任務</span>
-                </div>
-                <div className={`${styles.item} ${page =="tools" && styles.highlighted}`} onClick={()=>setPage("tools")}>
-                    <FontAwesomeIcon icon={faWandMagicSparkles} className="fas fa-check"></FontAwesomeIcon>
-                    <span>智能工具</span>
-                </div>
-                <div className={`${styles.item} ${page =="" && styles.highlighted}`} onClick={()=>setPage("")}>
-                    <FontAwesomeIcon icon={faWrench} className="fas fa-check"></FontAwesomeIcon>
-                    <span>了解更多</span>
-                </div>
+        <div style={{
+          background: "#696969",
+          display: "flex",
+          flexDirection: "column",
+          textAlign: "center"
+        }}>
+          <div className={`${styles.item} ${page === "creator" && styles.highlighted}`} onClick={() => setPage("creator")}>
+            <FontAwesomeIcon icon={faPalette} className="fas fa-check"></FontAwesomeIcon>
+            <span>製作繪本</span>
+          </div>
+          <div className={`${styles.item} ${page === "parentMission" && styles.highlighted}`} onClick={() => setPage("parentMission")}>
+            <FontAwesomeIcon icon={faPeopleRoof} className="fas fa-check"></FontAwesomeIcon>
+            <span>家長任務</span>
+          </div>
+          <div className={`${styles.item} ${page === "childMission" && styles.highlighted}`} onClick={() => setPage("childMission")}>
+            <FontAwesomeIcon icon={faChildReaching} className="fas fa-check"></FontAwesomeIcon>
+            <span>孩子任務</span>
+          </div>
+          <div className={`${styles.item} ${page === "tools" && styles.highlighted}`} onClick={() => setPage("tools")}>
+            <FontAwesomeIcon icon={faWandMagicSparkles} className="fas fa-check"></FontAwesomeIcon>
+            <span>智能工具</span>
+          </div>
+        </div>
 
-                
-            </div>
-            {/* <Context.Provider value={{frame,setFrame}}> */}
-            <div style={{background:"#383838"}} className='w-[250px]'>
-                {
-                    page=="creator" && 
-                    <Tabs key="creator" variant="underlined"  size="lg" fullWidth={Boolean(true)} color="primary" style={{padding:"20px 10px 0"}}  >
-                        <Tab title="範本" ><BooksTab func={UpdateBook} bid={book.bid}/></Tab>
-                        <Tab title="框架" ><FrameworkTab func={UpdateFramework} framework={book.page_config[currentSlide].framework}/></Tab>
-                        <Tab title="模式" ><ModeTab func={UpdateMode} mode={book.page_config[currentSlide].mode}/></Tab>
-                    </Tabs>
-                    ||
-                    page=="parentMission" &&
-                    <Tabs key="parent" variant="underlined"  size="lg" fullWidth={Boolean(true)} color="primary" style={{padding:"20px 10px 0"}}>
-                        <Tab title="目標"  className="w-full" ><CategoryTab type="parent" func={UpdateCategory}/></Tab>
-                        <Tab title="任務"  className="w-full" ><MissionTab type="parent" category={category}  func={UpdateMission}/></Tab>
-                        <Tab title="外框"  className="w-full" ><OuterframeTab type="parent" /></Tab>
-                    </Tabs>
-                    ||
-                    page=="childMission" &&
-                    <Tabs key="child" variant="underlined"  size="lg" fullWidth={Boolean(true)} color="primary" style={{padding:"20px 10px 0"}}  >
-                        <Tab title="目標" value="0" className="w-full" ><CategoryTab type="child" func={UpdateCategory}/></Tab>
-                        <Tab title="任務" value="1" className="w-full" ><MissionTab type="child" category={category} func={UpdateMission}/></Tab>
-                        <Tab title="外框" value="2" className="w-full" ><OuterframeTab type="child"/></Tab>
-                    </Tabs>
-                    ||
-                    page=="tools" && <ToolsView></ToolsView>
-                }
-                
-                
+        <div style={{ background: "#383838" }} className='w-[250px]'>
+          {page === "creator" &&
+            <Tabs key="creator" variant="underlined" size="lg" fullWidth={Boolean(true)} color="primary">
+              <Tab title="範本" key="0"><BooksTab func={UpdateBook} bid={book.bid} /></Tab>
+              <Tab title="模式" key="1"><ModeTab func={UpdateMode} mode={book.page_config[currentSlide].mode} /></Tab>
+            </Tabs>
+            ||
+            page === "parentMission" &&
+            <Tabs key="parent" variant="underlined" size="lg" fullWidth={Boolean(true)} color="primary" selectedKey={parent_mission_selectKey} onSelectionChange={(s) => set_parent_mission_selectKey(s.toString())}>
+              <Tab title="目標" key="0" className="w-full"><CategoryTab type="parent" func={UpdateCategory} /></Tab>
+              <Tab title="任務" key="1" className="w-full"><MissionTab type="parent" category={category} func={UpdateMission} /></Tab>
+              <Tab title="外框" key="2" className="w-full"><OuterframeTab type="parent" func={UpdateOuterFrame} /></Tab>
+            </Tabs>
+            ||
+            page === "childMission" &&
+            <Tabs key="child" variant="underlined" size="lg" fullWidth={Boolean(true)} color="primary" selectedKey={children_mission_selectKey} onSelectionChange={(s) => set_children_mission_selectKey(s.toString())}>
+              <Tab title="目標" key="0" className="w-full"><CategoryTab type="child" func={UpdateCategory} /></Tab>
+              <Tab title="任務" key="1" className="w-full"><MissionTab type="child" category={category} func={UpdateMission} /></Tab>
+              <Tab title="外框" key="2" className="w-full"><OuterframeTab type="child" func={UpdateOuterFrame} /></Tab>
+            </Tabs>
+            ||
+            page === "tools" && <ToolsView></ToolsView>
+          }
+        </div>
 
-                
+        <div className='justify-center items-center flex grow h-full w-full flex-col'>
+          {book.bid != null && <>
+            <div className='flex flex-row justify-end w-full mt-2'>
+              <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={saveBook}>
+                <FontAwesomeIcon icon={faFloppyDisk} className="fas fa-check"></FontAwesomeIcon>
+                Save
+              </Button>
+              <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={generatePDF}>
+                <FontAwesomeIcon icon={faShare} className="fas fa-check"></FontAwesomeIcon>
+                Export
+              </Button>
             </div>
-            {/* </Context.Provider> */}
-                <div className='justify-center items-center flex grow h-full w-full flex-col'>
-                {/* <div className='bg-black' style={{aspectRatio:4/3,height:"60vh"}}></div> */}
-                <div className='flex flex-row justify-end p-2 w-full mt-2'>
-                    <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
-                        <FontAwesomeIcon icon={faFloppyDisk} className="fas fa-check"></FontAwesomeIcon>
-                        Save
-                    </Button>
-                    <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={generatePDF}>
-                        <FontAwesomeIcon icon={faShare} className="fas fa-check"></FontAwesomeIcon>
-                        Export
-                    </Button>
-                </div>
-                <EmblaCarousel slides={book} onChange={handleSlideChange} />
-                
-                
-            </div>
-            
-        </main>
-        </NextUIProvider>
+            <EmblaCarousel slides={book} onChange={handleSlideChange} onItemsChange={handleItemsChange} />
+          </>
+            || page === "tools/chatbot" && <>
+              <div>chatbot</div>
+            </>
+            || page === "tools/image" && <>
+              <div>image</div>
+            </>
+            || book.bid == null && <>
+              <div>empty book</div>
+              <div>{JSON.stringify(book)}</div>
+            </>
+          }
+        </div>
+      </main>
+    </NextUIProvider>
+  )
+}
 
-    )
+// Other supporting tabs...
+
+const generatePDF = async () => {
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4"
+  });
+
+  const slides = document.querySelectorAll('.embla__slide__number');
+
+  for (let i = 0; i < slides.length; i++) {
+    await html2canvas(slides[i] as HTMLElement, {
+      scale: 2,
+      allowTaint: true,
+      useCORS: true,
+    })
+    .then(function (canvas) {
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 297; // A4 width in mm
+      const pageHeight = 210; // A4 height in mm
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // if (heightLeft >= 0) {
+      //   position = heightLeft - imgHeight;
+      //   doc.addPage();
+      //   doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      // }
+
+      console.log(`Slide ${i} captured successfully.`);
+    })
+    .catch(function (error) {
+      console.error(`Failed to capture slide ${i}:`, error);
+    });
+
+    if (i < slides.length - 1) {
+      doc.addPage();
+    }
   }
 
-
-
-
+  console.log("finished");
+  doc.save('book-export.pdf');
+};
 
 
 type Book = {
@@ -240,7 +266,7 @@ const BooksTab = (props:any)=>{
         {
             bid : 0,
             title : "",
-            coverImage : "/resources/library/book1/coverImage.png",
+            coverImage : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/coverImage.png",
             pages : [
                 {
                     modes :[
@@ -512,7 +538,7 @@ const BooksTab = (props:any)=>{
   <ScrollShadow className="w-full h-[80vh]">
         
   {category.map((categ:any) => (
-    <div className="m-auto text-white" key={categ.categ_name}  onClick={()=>props.func(categ.cid)}>
+    <div className="m-auto text-white" key={categ.categ_name}  onClick={()=>props.func(props.type,categ.cid)}>
     <Card 
       className="col-span-12 sm:col-span-4 bg-0 rounded-none" 
       shadow="none"
@@ -606,33 +632,35 @@ const BooksTab = (props:any)=>{
   const filtered_missions = missions.filter(mission => mission.cid.includes(props.category));
   
 
-return (
-  <ScrollShadow className="w-full h-[80vh]">
-        
-  { filtered_missions.map((mission,index) => (
-    <div style={{margin:"auto",marginBottom:"10px"}} key={index} onClick={()=>props.func(mission)}>
-    <Card 
-      className="col-span-12 sm:col-span-4 bg-0 rounded-none" 
-      shadow="none"
-      style={{
-          margin:"auto",
-          width: "180px",
-          
-          marginBottom:"10px"}}>
-      <Image
-      removeWrapper
-      alt="Card background"
-      className="z-0 w-full h-[120px] object-cover rounded-none"
-      src={mission.image}
-      />
-      <CardHeader className="pb-0 pt-2 px-4 flex-col items-center text-white ">
-          <span className=''>{mission.text}</span>
-      </CardHeader>
-  </Card>
-  </div>
-  ))}
-  
-  </ScrollShadow>
+    return (
+    <ScrollShadow className="w-full h-[80vh]">
+            
+    { filtered_missions.map((mission,index) => (
+        <div style={{margin:"auto",marginBottom:"10px"}} key={uuidv4()} onClick={()=>{props.func(
+            { ...mission,id: uuidv4(), initialPosition: { x: 0, y: 0 }, text: mission.text}
+        );}}>
+        <Card 
+        className="col-span-12 sm:col-span-4 bg-0 rounded-none" 
+        shadow="none"
+        style={{
+            margin:"auto",
+            width: "180px",
+            
+            marginBottom:"10px"}}>
+        <Image
+        removeWrapper
+        alt="Card background"
+        className="z-0 w-full h-[120px] object-cover rounded-none"
+        src={mission.image}
+        />
+        <CardHeader className="pb-0 pt-2 px-4 flex-col items-center text-white ">
+            <span className=''>{mission.text}</span>
+        </CardHeader>
+    </Card>
+    </div>
+    ))}
+    
+    </ScrollShadow>
     )
 }
 
@@ -663,7 +691,9 @@ return (
   <ScrollShadow className="w-full h-[80vh]">
         
   {frames.map((frame,index) => (
-    <div style={{margin:"auto",marginBottom:"10px"}} key={index}>
+    <div style={{margin:"auto",marginBottom:"10px"}} key={index} onClick={()=>{props.func(
+        frame.image
+);}}>
     <Card 
       className="col-span-12 sm:col-span-4 bg-0 rounded-none" 
       shadow="none"
@@ -685,41 +715,10 @@ return (
   </ScrollShadow>
     )
 }
-
-const generatePDF = async () => {
-    const doc = new jsPDF('l', 'mm');
-    
-    const slides = document.querySelectorAll('.embla__slide__number');
-    
-
-    for (let i = 0; i < slides.length; i++) {
-        await html2canvas(slides[i] as HTMLElement, {
-            allowTaint: true,
-            useCORS: true,
-        })
-        .then(function(canvas) {
-            var imgData = canvas.toDataURL('image/jpeg');
-            doc.addImage(imgData, 'JPG', 0, 0, 297, 210);
-            console.log(`Slide ${i} captured successfully.`);
-        })
-        .catch(function(error) {
-            console.error(`Failed to capture slide ${i}:`, error);
-        });
-
-        
-        
-        if (i < slides.length - 1) {
-          doc.addPage();
-        }
-    }
-    console.log("finished")
-    doc.save('book-export.pdf');
-};
-
 const ToolsView = () => {
     return (
         <>
-        <div className='w-full h-full pt-[3rem]'>
+        <div className='w-full  pt-[3rem]'>
         <div className="m-auto text-center w-[180px] mb-1">
             <Image
                 removeWrapper
@@ -737,15 +736,6 @@ const ToolsView = () => {
                 src="/static/mode-normal.png"
             />
             <div className="my-2 text-white"><span>Chatbot</span></div>
-        </div>
-        <div className="m-auto text-center w-[180px] mb-1">
-            <Image
-                removeWrapper
-                alt="Card background"
-                className="z-0 w-full h-[120px] object-cover rounded-none"
-                src="/static/mode-normal.png"
-            />
-            <div className="my-2 text-white"><span>AI picture</span></div>
         </div>
         </div>
         </>
