@@ -6,12 +6,14 @@ import React, {
   useImperativeHandle,
   forwardRef
 } from 'react';
-import { Image } from "@nextui-org/react";
+import { Button, Image } from "@nextui-org/react";
 import useEmblaCarousel from 'embla-carousel-react';
 import { NextButton, PrevButton, usePrevNextButtons } from './EmblaCarouselArrowButtons';
 import DraggableArea, { DraggableAreaHandles } from '@/app/ui/dnd/DraggableArea';
 import { PageConfig, Mission } from '@/type/Page';
 import "./embla.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 
 type PropType = {
   slides: {
@@ -19,6 +21,7 @@ type PropType = {
   };
   onChange: (selectedIndex: number) => void;
   onItemsChange: (pageIndex: number, updatedItems: Mission) => void;
+  setLoading:(status:boolean) => void;
 };
 
 export type EmblaCarouselHandles = {
@@ -26,7 +29,7 @@ export type EmblaCarouselHandles = {
 };
 
 const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) => {
-  const { slides, onChange, onItemsChange } = props;
+  const { slides, onChange, onItemsChange , setLoading} = props;
   const slidesCount = slides.page_config.length;
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: "x",
@@ -42,8 +45,9 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
   const onScroll = useCallback((embla) => {
     const progress = Math.max(0, Math.min(1, embla.scrollProgress()));
     const selected = embla.selectedScrollSnap();
-    onChange(selected);
+    // console.log("scrolling");
     setSelectedIndex(selected);
+    onChange(selected);
     setScrollProgress(progress * 100);
   }, [onChange]);
 
@@ -70,8 +74,8 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
 
   const handleExportResult = useCallback((index, result) => {
     console.log("taert");
-    // onItemsChange(index, result);
-  }, [onItemsChange]);
+    onItemsChange(index, result);
+  },[]);
   const onMissionUpdate= useCallback((index, result) => {
     console.log("taert");
     onItemsChange(index, result);
@@ -79,7 +83,7 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
   useEffect(() => {
     // Initialize refs array with the correct length
     setDraggableRefs(slides.page_config.map(() => React.createRef<DraggableAreaHandles>()));
-  }, [slides.page_config.length]);
+  },[]);
 
   useImperativeHandle(ref, () => ({
     updateSlideItemsAttributes: (index: number, attributes: Partial<Mission>[]) => {
@@ -90,7 +94,7 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
   }));
   
   return (
-    <div className="embla">
+    <div className="embla grow justify-center">
       <div className="embla__viewport" ref={emblaRef}>
         <div className="embla__container">
           {slides.page_config.map((value, index) => (
@@ -108,7 +112,7 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
                   <Image
                     removeWrapper
                     alt="Card background"
-                    className="z-0 w-full h-full object-cover rounded-none"
+                    className="z-0 w-full h-full rounded-none slideimage "
                     src={value.image || ""}
                     style={{ zIndex: -1 }}
                   />
@@ -122,7 +126,7 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
       <div className="embla__controls">
         <div className="embla__buttons">
           <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <span className="text-center">{selectedIndex + 1} / {slidesCount}</span>
+          <span className="text-center">{selectedIndex+1} /{slidesCount}</span>
           <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
         </div>
 

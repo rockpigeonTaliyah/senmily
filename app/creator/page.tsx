@@ -7,7 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { v4 as uuidv4 } from 'uuid';
-import { Link, Card, CardHeader, Image, NextUIProvider, ScrollShadow, Button ,Avatar, CardBody, Divider, CardFooter, ButtonGroup} from "@nextui-org/react";
+import { Link, Card, CardHeader, Image, NextUIProvider, ScrollShadow, Button ,Avatar, CardBody, Divider, CardFooter, ButtonGroup, CircularProgress} from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -15,12 +15,15 @@ import html2canvas from 'html2canvas';
 import EmblaCarousel, { EmblaCarouselHandles } from '@/app/ui/carousel/EmblaCarousel'
 import React, { useState, useCallback, useRef } from 'react';
 import { PageConfig, Mission } from '@/type/Page';
+import Chatbot from '@/app/ui/chatbot/page';
+import  AvatarCreator from '@/app/ui/avatar/page';
 
 // const handleItemsChange = (pageIndex: number, updatedItems: Mission[]) => {
 //   console.log(`Items in slide ${pageIndex} updated: `, updatedItems);
 // };
 
 export default function Page() {
+    const [loading , setLoading] = useState(false);
     const [parent_mission_selectKey, set_parent_mission_selectKey] = useState("0");
     const [children_mission_selectKey, set_children_mission_selectKey] = useState("0");
     const [focusMission, setFocusMission] = useState({});
@@ -46,7 +49,19 @@ export default function Page() {
                 mode: 0,
                 user_image: null,
                 image: page.modes[0].image,
-                missions: [],
+                missions: [{
+                    cid : [],
+                    mid : 0,
+                    id :uuidv4(),
+                    initialPosition: {
+                        x:388 ,
+                        y:590,
+                    },
+                    frame:"",
+                    image:"",
+                    target : "",
+                    text: page.text,
+                }],
             })),
         }));
     };
@@ -111,12 +126,13 @@ export default function Page() {
   
 
     const handleSlideChange = (index: number) => {
+        // console.log("Slide changes : ",index-1);
+        
         setCurrentSlide(index);
+        // console.log(book.page_config[currentSlide]);
     };
 
     const [page, setPage] = useState("creator");
-    const [parent_tab, setParentTab] = useState(0);
-    const [child_tab, setChildTab] = useState(0);
     const [category, setCategory] = useState(0);
 
     const UpdateCategory = (categType: any, categ: any) => {
@@ -126,21 +142,37 @@ export default function Page() {
     };
 
     const saveBook = () => {
-        console.log("final book:", JSON.stringify(book));
+        var b = book;
+        b.pages = null;
+        // unset(b.pages);
+        console.log("final book:",b);
+        console.log("final book:", JSON.stringify(b));
     };
-    const [communication_record, set_communication_record] = useState([
-      {
-        text: "",
-        choices : {
-          A : "",
-          B : "",
-          c : ""
-        }
-      }
-    ]);
-    // const communication_record = 
+
+    const [isFullscreen,setFullscreen] = useState(false);
     return (
         <NextUIProvider style={{ height: "100%" }}>
+            <div className={`duration-300 transition-all left-0 top-0 w-full h-full bg-white text-center justify-center items-center flex fixed   ${loading?"z-50 opacity-100":"-z-10 opacity-0"} `}><CircularProgress label="Loading..." /></div>
+            <div className={`text-white border-box fixed w-full h-[2rem] top-0 left-0 ${
+                isFullscreen ? "z-30 block" : " -z-10 hidden"
+            }`} onClick={(e)=>{
+             let emblaDiv = document.querySelector(".embla") as HTMLElement; // type assertion here
+             setLoading(true);
+              setTimeout(() => {
+                // Change the styles
+                emblaDiv.style.top = `0px`;
+                emblaDiv.style.left = `0px`;
+
+                // Remove the fullscreen class
+                emblaDiv.classList.remove("fullscreen");
+                setFullscreen(false);
+                // Wait for another 3 seconds for the styles to update
+                setTimeout(() => {
+                  // Then disable loading
+                  setLoading(false);
+                }, 500);
+              }, 1000);
+            }}>shrink <FontAwesomeIcon icon={faFloppyDisk} className="fas fa-check"></FontAwesomeIcon></div>
             <main className={styles.Palette}>
                 <div style={{
                     background: "#696969",
@@ -166,11 +198,11 @@ export default function Page() {
                     </div>
                 </div>
 
-                <div style={{ background: "#383838" }} className='w-[250px]'>
+                <div style={{ background: "#383838" }} className=''>
                     {page === "creator" &&
                         <Tabs key="creator" variant="underlined" size="lg" fullWidth={Boolean(true)} color="primary">
                             <Tab title="範本" key="0"><BooksTab func={UpdateBook} bid={book.bid} /></Tab>
-                            <Tab title="模式" key="1"><ModeTab func={UpdateMode} mode={book.page_config[currentSlide].mode} /></Tab>
+                            <Tab title="模式" key="1"><ModeTab func={UpdateMode} book={book} slideid={currentSlide} /></Tab>
                         </Tabs>
                         ||
                         page === "parentMission" &&
@@ -191,61 +223,61 @@ export default function Page() {
                     }
                 </div>
 
-                <div className='justify-center items-center flex grow h-full w-full flex-col'>
+                <div className=' items-center flex grow h-full w-full flex-col'>
                     {
                         page === "tools/chatbot" && <>
                             <div className="h-full w-full box-border px-5">
-                              {/* {communication_record.map((question)=>{
-
-                                text: "",
-                                choices : {
-                                  A : "",
-                                  B : "",
-                                  c : ""
-                                }
-                              })} */}
-                              <div className="w-full flex flex-row gap-4 items-center justify-start my-5">
-                                <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026302d" size="lg" />
-                                <Card className="min-w-[20rem]">
-                                  <CardHeader className="flex gap-3">
-                                    <span>Here is the question </span>
-                                  </CardHeader>
-                                  <Divider/>
-                                    <Button className="rounded-none bg-transparent">A. solutionA</Button>
-                                    <Button className="rounded-none bg-transparent">B. solutionB</Button>
-                                    <Button className="rounded-none bg-transparent">C. solutionC</Button>
-                                </Card>
-                              </div>
-                              <div className="w-full flex flex-row gap-4 items-center justify-end my-5">
-                                <Card className="h-min gap-4">
-                                  <CardBody >
-                                    <span>Make beautifue.</span>
-                                  </CardBody>
-                                </Card>
-                                <Avatar src="https://i.pravatar.cc/150?u=a04258114e29026302d" size="lg" />
-                              </div>
-
+                                <Chatbot/>
                             </div>
                         </>
                         || page === "tools/avatar" && <>
-                            <div className="w-full h-full">avatar</div>
+                             <div className="h-full w-full box-border px-5">
+                                <AvatarCreator/>
+                            </div>
                         </>
                         || book.bid == null && <>
-                            <div className="w-full h-full">empty book</div>
-                            <div>{JSON.stringify(book)}</div>
+                            <div className="w-full h-full flex justify-center items-center">
+                                <div className="w-[50%] h-[500px] text-center shadow-lg rounded-lg">請選擇範本</div>
+                            </div>
+                            {/* <div>{JSON.stringify(book)}</div> */}
                         </>
                         || book.bid != null && <>
-                        <div className='flex flex-row justify-end w-full mt-2'>
+                        <div className='flex flex-row justify-end w-full mt-2 py-2 border-box'>
+                                            
+                            <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={(e)=>{
+                                    let emblaDiv = document.querySelector(".embla") as HTMLElement; // type assertion here
+                                    let rect = emblaDiv.getBoundingClientRect();
+                                    setLoading(true);
+
+                                    // Wait for 3 seconds for the loading overlay animation to complete
+                                    setTimeout(() => {
+                                        // Change the styles
+
+                                        // Remove the fullscreen class
+                                        emblaDiv.classList.add("fullscreen");
+                                        setFullscreen(true);
+                                        // Wait for another 3 seconds for the styles to update
+                                        setTimeout(() => {
+                                        // Then disable loading
+                                        setLoading(false);
+                                        }, 500);
+                                    }, 500);
+                                    
+                            }}>
+                                <FontAwesomeIcon icon={faFloppyDisk} className="fas fa-check"></FontAwesomeIcon>
+                                Reader Mode
+                            </Button>
                             <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={saveBook}>
                                 <FontAwesomeIcon icon={faFloppyDisk} className="fas fa-check"></FontAwesomeIcon>
                                 Save
                             </Button>
-                            <Button radius="full" size="sm" className="mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={generatePDF}>
+                            <Button radius="full" size="sm" className="hidden mx-2 bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg" onClick={generatePDF}>
                                 <FontAwesomeIcon icon={faShare} className="fas fa-check"></FontAwesomeIcon>
                                 Export
                             </Button>
                         </div>
-                        <EmblaCarousel slides={book} onChange={handleSlideChange} onItemsChange={handleItemsChange} />
+                        {/* <Stage ref={stageRef}/> */}
+                        <EmblaCarousel  slides={book} onChange={handleSlideChange} onItemsChange={handleItemsChange} setLoading={setLoading}/>
                     </>
                     }
                 </div>
@@ -308,26 +340,28 @@ const BooksTab = (props: any) => {
             coverImage: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/coverImage.png",
             pages: [
                 {
+                    text: "test 0",
                     modes: [
                         {
-                            id: 0,
-                            image: "https://nextui.org/images/card-example-1.jpeg"
-                        },
-                        {
-                            id: 1,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 2,
-                            image: "https://nextui.org/images/card-example-4.jpeg"
-                        },
-                        {
-                            id: 3,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        }
+                            id : 0,
+                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/default.png"
+                          },
+                          {
+                            id : 1,
+                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode1.png"
+                          },
+                          {
+                            id : 2,
+                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode2.png"
+                          },
+                          {
+                            id : 3,
+                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode3.png"
+                          }
                     ]
                 },
                 {
+                    text: "test 1 ",
                     modes: [
                         {
                             id: 0,
@@ -348,6 +382,7 @@ const BooksTab = (props: any) => {
                     ]
                 },
                 {
+                    text: "test 2 ",
                     modes: [
                         {
                             id: 0,
@@ -368,6 +403,7 @@ const BooksTab = (props: any) => {
                     ]
                 },
                 {
+                    text: "test 3 ",
                     modes: [
                         {
                             id: 0,
@@ -388,6 +424,7 @@ const BooksTab = (props: any) => {
                     ]
                 },
                 {
+                    text: "test 4 ",
                     modes: [
                         {
                             id: 0,
@@ -468,28 +505,33 @@ const FrameworkTab = (props: any) => {
 }
 
 const ModeTab = (props: any) => {
+    console.log()
+    // console.log();
+    var array_id = props.slideid - 1;
     const modeList = [
         {
             mid: 0,
             name: "一般模式",
-            image: "/static/mode-normal.png"
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/1-normal.png"
         },
         {
             mid: 1,
             name: "專注模式",
-            image: "/static/mode-1.png"
+            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/2-focus.png"
         },
         {
             mid: 2,
             name: "認讀模式",
-            image: "/static/mode-2.png"
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/3-read.png"
         },
         {
             mid: 3,
             name: "社交模式",
-            image: "/static/mode-3.png"
+            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/4-social.png"
         }
     ]
+    console.log("mode:",props.book);
+    console.log(array_id);
     return (
         <ScrollShadow className="w-full h-[80vh]">
             {modeList.map((mode: any) => (
@@ -497,11 +539,11 @@ const ModeTab = (props: any) => {
                     <Image
                         removeWrapper
                         alt="Card background"
-                        className={`z-0 w-full h-full object-cover rounded-none ${props.mode == mode.mid && "rounded-lg border-slate-300 border-4"}`}
+                        className={`z-0 w-full h-full object-cover rounded-none ${props.book.page_config[array_id+1].mode == mode.mid && "rounded-lg border-slate-300 border-4"}`}
                         src={mode.image}
                         style={{ margin: "auto", width: "180px", height: "120px" }}
                     />
-                                        <div><span>{mode.name}</span></div>
+                                        <div><span className="text-white py-2">{mode.name}</span></div>
                 </div>
             ))}
         </ScrollShadow>
@@ -513,22 +555,22 @@ const CategoryTab = (props: any) => {
     if (props.type && props.type === "parent") {
         category = [
             {
-                "image": "https://nextui.org/images/fruit-4.jpeg",
+                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
                 "categ_name": "專注閱讀",
                 cid: 0
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
                 "categ_name": "社交學習",
                 cid: 1
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
                 "categ_name": "語言理解",
                 cid: 2
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
                 "categ_name": "讀寫學習",
                 cid: 3
             }
@@ -537,22 +579,22 @@ const CategoryTab = (props: any) => {
     else if (props.type && props.type === "child") {
         category = [
             {
-                "image": "https://nextui.org/images/fruit-4.jpeg",
+                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
                 "categ_name": "專注閱讀",
                 cid: 0
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
                 "categ_name": "社交學習",
                 cid: 1
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
                 "categ_name": "語言理解",
                 cid: 2
             },
             {
-                "image": "https://nextui.org/images/fruit-3.jpeg",
+                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
                 "categ_name": "讀寫學習",
                 cid: 3
             }
@@ -593,28 +635,28 @@ const MissionTab = (props: any) => {
             cid: [0, 2],
             target: "parent",
             text: "留意子女專注的位置",
-            image: "/static/read-read.png"
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png"
         },
         {
             mid: 1,
             cid: [0, 2],
             target: "parent",
             text: "留意子女專注的位置",
-            image: "/static/read-read.png"
+            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png"
         },
         {
             mid: 2,
             cid: [1],
             target: "parent",
             text: "留意子女專注",
-            image: "/static/read-read.png"
+            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png"
         },
         {
             mid: 3,
             cid: [3],
             target: "parent",
             text: "留意子女專注的位置",
-            image: "/static/read-read.png"
+            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png"
         }
     ]
     const child_missions = [
@@ -682,23 +724,43 @@ const OuterframeTab = (props: any) => {
     var frames = [
         {
             fid: 0,
-            image: "/static/outerframe-1.png"
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-1.png"
         },
         {
             fid: 1,
-            image: "/static/outerframe-2.png"
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-2.png"
         },
         {
-            fid: 2,
-            image: "/static/outerframe-3.png"
+            fid: 0,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-3.png"
         },
         {
-            fid: 3,
-            image: "/static/outerframe-4.png"
+            fid: 1,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-4.png"
         },
         {
-            fid: 4,
-            image: "/static/outerframe-5.png"
+            fid: 0,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-5.png"
+        },
+        {
+            fid: 1,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-1.png"
+        },
+        {
+            fid: 0,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-2.png"
+        },
+        {
+            fid: 1,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-3.png"
+        },
+        {
+            fid: 0,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-4.png"
+        },
+        {
+            fid: 1,
+            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-5.png"
         }
     ]
     return (
@@ -716,7 +778,7 @@ const OuterframeTab = (props: any) => {
                         <Image
                             removeWrapper
                             alt="Card background"
-                            className="z-0 w-full h-[120px] object-cover rounded-none"
+                            className="z-0 w-full h-[120px] object-cover rounded-none object-contain"
                             src={frame.image}
                         />
                     </Card>

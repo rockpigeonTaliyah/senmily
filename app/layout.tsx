@@ -4,6 +4,7 @@ import SideNav from '@/app/ui/navbar/page';
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import Link from 'next/link';
+import {Image}  from "@nextui-org/react";
 import * as React from "react";
 config.autoAddCss = false;
 import { Metadata } from "next";
@@ -21,8 +22,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased`} style={{height:"100vh"}}>
         <div style={{display:"flex",flexDirection:"column",height:"inherit"}}>
-          <div className="bg-yellow-100 flex-row flex m-w-screen justify-between gap-2">
-            <Link  href={{ pathname: '/' }}><span>logo</span> </Link>
+          <div className="bg-yellow-100 flex-row flex m-w-screen justify-between gap-2 p-2 border-box">
+            <Link  href={{ pathname: '/' }} className="ml-[1rem]">
+            <Image src="https://senmily.s3.ap-southeast-1.amazonaws.com/resources/logo/logo.png" className='h-[70px]'/>  
+            </Link>
             
             <SideNav/>
           </div>

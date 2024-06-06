@@ -4,23 +4,23 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useCallback,
-} from "react";
+  useCallback
+} from 'react';
 import {
   DndContext,
   useSensors,
   useSensor,
-  PointerSensor,
-} from "@dnd-kit/core";
-import DraggableItem from "./DraggableItem";
-import EditableDiv from "./EditableDiv";
-import { Mission } from "@/type/Page";
+  PointerSensor
+} from '@dnd-kit/core';
+import DraggableItem from './DraggableItem';
+import EditableDiv from './EditableDiv';
+import { Mission } from '@/type/Page';
 
 type DraggableAreaProps = {
   children: React.ReactNode;
   items: Mission[];
   onExport?: (result: Mission[]) => void;
-  onMissionUpdate?: (item: any) => void;
+  onMissionUpdate ?: (item:any) => void;
   onDragStart?: any;
   onDragEnd?: any;
 };
@@ -38,43 +38,34 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
       onExport,
       onMissionUpdate,
       onDragStart,
-      onDragEnd,
+      onDragEnd
     },
-    ref
+    ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const initialDimensions = useRef({ width: 0, height: 0 });
     const [positions, setPositions] = useState<
       Record<string, { x: number; y: number }>
-    >(
-      () =>
-        items.reduce(
-          (acc, item) => ({ ...acc, [item.id]: item.initialPosition }),
-          {}
-        )
+    >(() =>
+      items.reduce(
+        (acc, item) => ({ ...acc, [item.id]: item.initialPosition }),
+        {},
+      ),
     );
 
     const [texts, setTexts] = useState<Record<string, string>>(() =>
-      items.reduce((acc, item) => ({ ...acc, [item.id]: item.text }), {})
+      items.reduce((acc, item) => ({ ...acc, [item.id]: item.text }), {}),
     );
 
     useEffect(() => {
-      const containerRect = containerRef.current!.getBoundingClientRect();
-      initialDimensions.current = {
-        width: containerRect.width,
-        height: containerRect.height,
-      };
-    }, []);
-
-    useEffect(() => {
+      console.log(items);
       setPositions((prevPositions) =>
         items.reduce(
           (acc, item) => ({
             ...acc,
             [item.id]: prevPositions[item.id] || item.initialPosition,
           }),
-          {}
-        )
+          {},
+        ),
       );
       setTexts((prevTexts) =>
         items.reduce(
@@ -82,8 +73,8 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
             ...acc,
             [item.id]: prevTexts[item.id] || item.text,
           }),
-          {}
-        )
+          {},
+        ),
       );
     }, [items]);
 
@@ -91,7 +82,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
       const result = items.map((item) => ({
         ...item,
         text: texts[item.id],
-        initialPosition: positions[item.id],
+        initialPosition: positions[item.id]
       }));
 
       if (onExport) {
@@ -102,7 +93,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
     const updateItemsAttributes = (attributes: Partial<Mission>[]) => {
       setPositions((prevPositions) => {
         const updatedPositions = { ...prevPositions };
-        attributes.forEach((attr) => {
+        attributes.forEach(attr => {
           if (attr.id && attr.initialPosition) {
             updatedPositions[attr.id] = attr.initialPosition;
           }
@@ -112,7 +103,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
 
       setTexts((prevTexts) => {
         const updatedTexts = { ...prevTexts };
-        attributes.forEach((attr) => {
+        attributes.forEach(attr => {
           if (attr.id && attr.text) {
             updatedTexts[attr.id] = attr.text;
           }
@@ -128,12 +119,9 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
       updateItemsAttributes,
     }));
 
-    const ParentHandleDragEnd = useCallback(
-      (event) => {
-        onDragEnd && onDragEnd(); // call parent's onDragEnd if defined
-      },
-      [onDragEnd]
-    );
+    const ParentHandleDragEnd = useCallback((event) => {
+      onDragEnd && onDragEnd(); // call parent's onDragEnd if defined
+    }, [onDragEnd]);
 
     const SelfhandleDragEnd = useCallback(
       (event: any) => {
@@ -145,7 +133,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
         setPositions((prevPositions) => {
           const newPosition = {
             x: Math.max(0, prevPositions[id].x + delta.x),
-            y: Math.max(0, prevPositions[id].y + delta.y),
+            y: Math.max(0, prevPositions[id].y + delta.y)
           };
           const containerRect = containerRef.current!.getBoundingClientRect();
           const itemWidth = 100; // consider making this dynamic or passing it as a prop
@@ -172,64 +160,34 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
       useSensor(PointerSensor, {
         activationConstraint: {
           distance: 1,
-        },
+        }
       })
     );
-
-    const onUpdate = (e, id, target, frame, position) => {
+    const onUpdate = (e,id,target,frame,position) => {
       onMissionUpdate({
-        id: id,
-        target: target,
-        frame: frame,
-        initialPosition: position,
-        text: e.target.innerText,
-      });
-    };
-
-    useEffect(() => {
-      const handleResize = () => {
-        if (containerRef.current) {
-          const containerRect = containerRef.current.getBoundingClientRect();
-          const widthRatio =
-            containerRect.width / initialDimensions.current.width;
-          const heightRatio =
-            containerRect.height / initialDimensions.current.height;
-
-          setPositions((prevPositions) => {
-            const updatedPositions = { ...prevPositions };
-            for (const id in updatedPositions) {
-              const itemPosition = prevPositions[id];
-              updatedPositions[id] = {
-                x: itemPosition.x * widthRatio,
-                y: itemPosition.y * heightRatio,
-              };
-            }
-            return updatedPositions;
-          });
-
-          handleExport();
-        }
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, [handleExport]);
-
+        id : id,
+        target : target,
+        frame : frame,
+        initialPosition : position,
+        text : e.target.innerText,
+      })
+      console.log("Area reciveed",e.target.innerText);
+      console.log("Area reciveed",target);
+      console.log("Area reciveed",frame);
+      console.log("Area reciveed",position);
+      console.log("id",id);
+    }
     return (
-      <DndContext
-        sensors={sensors}
-        onDragEnd={SelfhandleDragEnd}
-        onDragStart={onDragStart}
-      >
+      <DndContext sensors={sensors} onDragEnd={SelfhandleDragEnd} onDragStart={onDragStart}>
         <div
           id="container"
           ref={containerRef}
           key="dndcontainer"
           style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
           }}
         >
           {items.map((item) => (
@@ -242,9 +200,7 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
             >
               <EditableDiv
                 text={texts[item.id]}
-                textUpdate={(e: React.PointerEvent<HTMLDivElement>) => {
-                  onUpdate(e, item.id, item.target, item.frame, positions[item.id]);
-                }}
+                textUpdate={(e: React.PointerEvent<HTMLDivElement>)=>{onUpdate(e,item.id,item.target,item.frame,positions[item.id])}}
               />
             </DraggableItem>
           ))}
@@ -252,9 +208,9 @@ const DraggableArea = forwardRef<DraggableAreaHandles, DraggableAreaProps>(
         </div>
       </DndContext>
     );
-  }
+  },
 );
 
-DraggableArea.displayName = "DraggableArea";
+DraggableArea.displayName = 'DraggableArea';
 
 export default DraggableArea;

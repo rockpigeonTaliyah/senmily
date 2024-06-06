@@ -52,10 +52,10 @@ export default function Page() {
             
             <Button 
               variant='shadow'
-              href="#" 
+              
               className="btn btn-primary bg-white p2-1 rounded-full px-4 w-fit"
               style={{padding:"1rem 3rem",fontWeight:"bold"}}
-              >立即製作</Button>
+              ><Link href="/creator" >立即製作</Link></Button>
           </div>
           <div className="flex-1 flex center">
             <div className="block circle h-auto w-80 rounded-full bg-black m-auto"></div>
