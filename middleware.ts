@@ -32,7 +32,6 @@ export async function middleware(req:NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
     "/creator", //use this to protect all child routes of '/protected'
     "/creator/:path*", //use this to protect all child routes of '/protected'
   ],
