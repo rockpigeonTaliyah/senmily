@@ -21,7 +21,10 @@ export async function middleware(req:NextRequest) {
   // Redirect to sign-in page if the token is not found
     return NextResponse.redirect(new URL("/", req.url));
   }
-  
+
+  if (req.nextUrl.pathname == "/login" || req.nextUrl.pathname == "/") {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
   return NextResponse.next();
 }
   
