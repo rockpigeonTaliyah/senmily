@@ -104,9 +104,6 @@ const authConfig: NextAuthConfig = {
   session: {
     strategy: 'jwt',
   },
-  pages: {
-    signIn: '/auth/login',
-  },
 };
 export default authConfig;
 const refreshCognitoToken = (token:any) =>
