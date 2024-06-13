@@ -1,5 +1,4 @@
 import { NextAuthConfig } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
 import CredentialProvider from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import {
@@ -100,7 +99,6 @@ const authConfig: NextAuthConfig = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET!,
   session: {
     strategy: 'jwt',
   },
