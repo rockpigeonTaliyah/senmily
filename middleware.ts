@@ -19,7 +19,7 @@ export async function middleware(req:NextRequest) {
   // console.log(token);
   if (!token) {
   // Redirect to sign-in page if the token is not found
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/auth/login/", req.url));
   }
   
   return NextResponse.next();
@@ -29,7 +29,8 @@ export async function middleware(req:NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard",
-    "/dashboard/:path*", //use this to protect all child routes of '/protected'
+    "/",
+    "/creator", //use this to protect all child routes of '/protected'
+    "/creator/:path*", //use this to protect all child routes of '/protected'
   ],
 };

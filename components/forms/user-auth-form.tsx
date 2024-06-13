@@ -1,26 +1,16 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-// import GoogleSignInButton from '../google-auth-button';
-import GithubSignInButton from '../github-auth-button';
+import { useState } from 'react';
+import { Input, Button, Spacer, Card } from '@nextui-org/react';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Enter a valid email address' }),
-  password: z.string().min(8).max(16)
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }).max(16, { message: 'Password must be within 16 characters' })
 });
 
 type UserFormValue = z.infer<typeof formSchema>;
@@ -33,23 +23,20 @@ export default function UserAuthForm() {
     email: '',
     password: '',
   };
-  const form = useForm<UserFormValue>({
+
+  const { handleSubmit, control, formState: { errors } } = useForm<UserFormValue>({
     resolver: zodResolver(formSchema),
-    defaultValues
+    defaultValues,
   });
 
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
-    console.log("SUBMITED ");
     try {
-      console.log(data);
       const result = await signIn('email-login', {
-        // redirect: false,
         email: data.email,
         password: data.password,
         callbackUrl: callbackUrl ?? '/dashboard'
       });
-      console.log(result);
       if (!result?.error) {
         // Handle successful authentication (e.g., redirect)
         console.log('Successfully signed in:', result);
@@ -65,66 +52,58 @@ export default function UserAuthForm() {
   };
 
   return (
-<>
-<Form {...form}>
-  <form
-    onSubmit={form.handleSubmit(onSubmit)}
-    className="w-full space-y-2"
-  >
-    <FormField
-      control={form.control}
-      name="email"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Email</FormLabel>
-          <FormControl>
-            <Input
-              type="email"
-              placeholder="Enter your email..."
-              disabled={loading}
-              {...field}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Card>
+        <Card>
+          <h3>Login</h3>
+        </Card>
+        <Card>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <Input
+                    {...field}
+                    width="100%"
+                    label="Email"
+                    placeholder="Enter your email..."
+                    isClearable
+                    disabled={loading}
+                  />
+                  <Spacer y={1.5} />
+                </div>
+              )}
             />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <FormField
-      control={form.control}
-      name="password"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Password</FormLabel>
-          <FormControl>
-            <Input
-              type="password"
-              placeholder="Enter your password..."
-              disabled={loading}
-              {...field}
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <Input
+                    {...field}
+                    width="100%"
+                    label="Password"
+                    placeholder="Enter your password..."
+                    isClearable
+                    type='password'
+                    disabled={loading}
+                  />
+                  <Spacer y={1.5} />
+                </div>
+              )}
             />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-
-    <Button disabled={loading} className="ml-auto w-full" type="submit">
-      Continue With Email
-    </Button>
-  </form>
-</Form>
-<div className="relative">
-  <div className="absolute inset-0 flex items-center">
-    <span className="w-full border-t" />
-  </div>
-  <div className="relative flex justify-center text-xs uppercase">
-    <span className="bg-background px-2 text-muted-foreground">
-      Or continue with
-    </span>
-  </div>
-</div>
-{/* <GoogleSignInButton /> */}
-<GithubSignInButton />
-</>
+            <Button disabled={loading} className='w-full' type="submit">
+              Continue With Email
+            </Button>
+          </form>
+          <Spacer y={1.5} />
+          <div style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: '12px' }}>
+            Or continue with
+          </div>
+        </Card>
+      </Card>
+    </div>
   );
 }

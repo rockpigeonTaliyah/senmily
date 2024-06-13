@@ -105,7 +105,7 @@ const authConfig: NextAuthConfig = {
     strategy: 'jwt',
   },
   pages: {
-    signIn: '/',
+    signIn: '/auth/login',
   },
 };
 export default authConfig;
