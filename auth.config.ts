@@ -17,7 +17,6 @@ const userPool = new CognitoUserPool({
   ClientId: process.env.COGNITO_CLIENT_ID!,
 });
 
-
 const authConfig: NextAuthConfig = {
   providers: [
     GithubProvider({
@@ -32,28 +31,24 @@ const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, req) {
-        console.log("credentials");
-        console.log(credentials);
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Missing credentials');
         }
 
-        const userData :ICognitoUserData  = {
+        const userData: ICognitoUserData = {
           Username: credentials.email as string,
           Pool: userPool,
         };
-        // ICognitoUserData
 
         const cognitoUser = new CognitoUser(userData);
         const authDetails = new AuthenticationDetails({
           Username: credentials.email as string,
           Password: credentials.password as string,
         });
+
         return new Promise((resolve, reject) => {
           cognitoUser.authenticateUser(authDetails, {
             onSuccess: (result) => {
-              console.log("result");
-              console.log(result);
               const token = {
                 name: credentials.email as string,
                 accessToken: result.getAccessToken().getJwtToken(),
@@ -72,7 +67,7 @@ const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user } : {token: any, user: any}) => {
+    jwt: async ({ token, user }: { token: any, user: any }) => {
       if (user) {
         return {
           ...user,
@@ -83,15 +78,12 @@ const authConfig: NextAuthConfig = {
           accessTokenExpires: user.accessTokenExpires,
         };
       }
-      // console.log("token: ",token);
-      // console.log(Date.now());
       if (Date.now() < token.accessTokenExpires) {
         return token;
       }
-
       return refreshCognitoToken(token);
     },
-    session: async ({ session, token } : {session: any, token: any}) => {
+    session: async ({ session, token }: { session: any, token: any }) => {
       session.user.accessToken = token.accessToken;
       session.user.refreshToken = token.refreshToken;
       session.user.idToken = token.idToken;
@@ -107,7 +99,8 @@ const authConfig: NextAuthConfig = {
   },
 };
 export default authConfig;
-const refreshCognitoToken = (token:any) =>
+
+const refreshCognitoToken = (token: any) =>
   new Promise((resolve, reject) => {
     const cognitoUser = new CognitoUser({
       Username: token.name as string,
@@ -131,4 +124,3 @@ const refreshCognitoToken = (token:any) =>
       });
     });
   });
-
