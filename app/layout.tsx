@@ -25,7 +25,7 @@ export default async function RootLayout({
       <body className={`antialiased`} style={{height:"100vh"}}>
       <Providers session={session}>
         <div style={{display:"flex",flexDirection:"column",height:"inherit"}}>
-          {session.user && <div className="bg-yellow-100 flex-row flex m-w-screen justify-between gap-2 p-2 border-box">
+          {session && session.user && <div className="bg-yellow-100 flex-row flex m-w-screen justify-between gap-2 p-2 border-box">
             <Link  href={{ pathname: '/' }} className="ml-[1rem]">
             <Image src="https://senmily.s3.ap-southeast-1.amazonaws.com/resources/logo/logo.png" className='h-[70px]'/>  
             </Link>
