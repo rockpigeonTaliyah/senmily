@@ -35,7 +35,7 @@ export default function UserAuthForm() {
       const result = await signIn('email-login', {
         email: data.email,
         password: data.password,
-        callbackUrl: callbackUrl ?? '/dashboard'
+        callbackUrl: callbackUrl ?? '/home'
       });
       if (!result?.error) {
         // Handle successful authentication (e.g., redirect)
