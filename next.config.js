@@ -22,9 +22,7 @@ const nextConfig = {
             }
         ]
     },
-    reactStrictMode: false,
-    output: 'export',
-    distDir: 'dist'
+    reactStrictMode: false
 }
 
 module.exports = withPWA(nextConfig);
