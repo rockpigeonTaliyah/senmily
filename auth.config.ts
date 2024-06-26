@@ -46,23 +46,28 @@ const authConfig: NextAuthConfig = {
           Password: credentials.password as string,
         });
 
-        return new Promise((resolve, reject) => {
-          cognitoUser.authenticateUser(authDetails, {
-            onSuccess: (result) => {
-              const token = {
-                name: credentials.email as string,
-                accessToken: result.getAccessToken().getJwtToken(),
-                refreshToken: result.getRefreshToken().getToken(),
-                idToken: result.getIdToken().getJwtToken(),
-                accessTokenExpires: result.getAccessToken().getExpiration(),
-              };
-              resolve(token);
-            },
-            onFailure: (err) => {
-              reject(err);
-            },
+        try {
+          return await new Promise((resolve, reject) => {
+            cognitoUser.authenticateUser(authDetails, {
+              onSuccess: (result) => {
+                const token = {
+                  name: credentials.email as string,
+                  accessToken: result.getAccessToken().getJwtToken(),
+                  refreshToken: result.getRefreshToken().getToken(),
+                  idToken: result.getIdToken().getJwtToken(),
+                  accessTokenExpires: result.getAccessToken().getExpiration(),
+                };
+                resolve(token);
+              },
+              onFailure: (err) => {
+                reject(new Error(`Authentication failed: ${err.message}`));
+              },
+            });
           });
-        });
+        } catch (error) {
+          // console.error('Error during authentiasdcation:', error);
+          // throw error;
+        }
       },
     }),
   ],
@@ -78,10 +83,11 @@ const authConfig: NextAuthConfig = {
           accessTokenExpires: user.accessTokenExpires,
         };
       }
-      if (Date.now() < token.accessTokenExpires) {
-        return token;
-      }
-      return refreshCognitoToken(token);
+      return token;
+      // if (Date.now() < token.accessTokenExpires) {
+      //   return token;
+      // }
+      // return refreshCognitoToken(token);
     },
     session: async ({ session, token }: { session: any, token: any }) => {
       session.user.accessToken = token.accessToken;
@@ -98,7 +104,6 @@ const authConfig: NextAuthConfig = {
     signIn: '/',
   },
 };
-export default authConfig;
 
 const refreshCognitoToken = (token: any) =>
   new Promise((resolve, reject) => {
@@ -113,7 +118,7 @@ const refreshCognitoToken = (token: any) =>
 
     cognitoUser.refreshSession(refreshToken, (err, session: CognitoUserSession) => {
       if (err) {
-        console.log('Error refreshing token:', err);
+        console.error('Error refreshing token:', err);
         return reject(err);
       }
       resolve({
@@ -124,3 +129,5 @@ const refreshCognitoToken = (token: any) =>
       });
     });
   });
+
+export default authConfig;

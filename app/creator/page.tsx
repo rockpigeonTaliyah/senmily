@@ -17,6 +17,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { PageConfig, Mission } from '@/type/Page';
 import Chatbot from '@/app/ui/chatbot/page';
 import  AvatarCreator from '@/app/ui/avatar/page';
+import { BooksTab, CategoryTab, MissionTab, ModeTab, OuterframeTab, ToolsTab } from '@/components/creatorTabs';
 
 // const handleItemsChange = (pageIndex: number, updatedItems: Mission[]) => {
 //   console.log(`Items in slide ${pageIndex} updated: `, updatedItems);
@@ -38,31 +39,38 @@ export default function Page() {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const UpdateBook = (e: any, book: any) => {
+        console.log("Book.pages: ", book.pages);
         setBook((originalBook) => ({
             ...originalBook,
-            bid: book.bid,
+            bid: book.id,
             title: "",
             coverImage: book.coverImage,
-            pages: book.pages,
-            page_config: book.pages.map((page: any) => ({
-                framework: null,
-                mode: 0,
-                user_image: null,
-                image: page.modes[0].image,
-                missions: [{
-                    cid : [],
-                    mid : 0,
-                    id :uuidv4(),
-                    initialPosition: {
-                        x:388 ,
-                        y:590,
-                    },
-                    frame:"",
-                    image:"",
-                    target : "",
-                    text: page.text,
-                }],
-            })),
+            pages: book.pages, // Assuming you still want to keep the original pages structure as well
+            page_config: book.pages.map((page: any) => {
+                // Assuming here that 'pictures' is the correct field instead of 'modes' in the original structure
+                // Also, making sure that there's at least one picture in the array before trying to access it
+                const firstPicture = page.pictures && page.pictures.length > 0 ? page.pictures[0].image : "";
+    
+                return {
+                    framework: null,
+                    mode: page.pictures && page.pictures.length > 0 ? page.pictures[0].mode : 0,
+                    user_image: null,
+                    image: firstPicture, // Use the image from the first picture
+                    missions: [{
+                        cid : [],
+                        mid : 0,
+                        id: uuidv4(),
+                        initialPosition: {
+                            x: 388,
+                            y: 590,
+                        },
+                        frame: "",
+                        image: "", // If you need to use a specific picture here, define it
+                        target: "",
+                        text: page.text, // Make sure 'text' field exists in your 'page'
+                    }],
+                };
+            }),
         }));
     };
 
@@ -219,7 +227,7 @@ export default function Page() {
                                 <Tab title="外框" key="2" className="w-full"><OuterframeTab type="child" func={UpdateOuterFrame} /></Tab>
                             </Tabs>
                         ||
-                        /^tools*/.test(page)  && <ToolsView func={setPage}></ToolsView>
+                        /^tools*/.test(page)  && <ToolsTab func={setPage}></ToolsTab>
                     }
                 </div>
 
@@ -332,485 +340,14 @@ const generatePDF = async () => {
 
 // Supporting Tabs...
 
-const BooksTab = (props: any) => {
-    var books = [
-        {
-            bid: 0,
-            title: "",
-            coverImage: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/coverImage.png",
-            pages: [
-                {
-                    text: "test 0",
-                    modes: [
-                        {
-                            id : 0,
-                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/default.png"
-                          },
-                          {
-                            id : 1,
-                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode1.png"
-                          },
-                          {
-                            id : 2,
-                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode2.png"
-                          },
-                          {
-                            id : 3,
-                            image : "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/library/book1/pages/0/P1Mode3.png"
-                          }
-                    ]
-                },
-                {
-                    text: "test 1 ",
-                    modes: [
-                        {
-                            id: 0,
-                            image: "https://nextui.org/images/card-example-5.jpeg"
-                        },
-                        {
-                            id: 1,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 2,
-                            image: "https://nextui.org/images/card-example-4.jpeg"
-                        },
-                        {
-                            id: 3,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        }
-                    ]
-                },
-                {
-                    text: "test 2 ",
-                    modes: [
-                        {
-                            id: 0,
-                            image: "https://nextui.org/images/card-example-1.jpeg"
-                        },
-                        {
-                            id: 1,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 2,
-                            image: "https://nextui.org/images/card-example-4.jpeg"
-                        },
-                        {
-                            id: 3,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        }
-                    ]
-                },
-                {
-                    text: "test 3 ",
-                    modes: [
-                        {
-                            id: 0,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        },
-                        {
-                            id: 1,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 2,
-                            image: "https://nextui.org/images/card-example-4.jpeg"
-                        },
-                        {
-                            id: 3,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        }
-                    ]
-                },
-                {
-                    text: "test 4 ",
-                    modes: [
-                        {
-                            id: 0,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 1,
-                            image: "https://nextui.org/images/card-example-3.jpeg"
-                        },
-                        {
-                            id: 2,
-                            image: "https://nextui.org/images/card-example-4.jpeg"
-                        },
-                        {
-                            id: 3,
-                            image: "https://nextui.org/images/card-example-2.jpeg"
-                        }
-                    ]
-                },
-            ]
-        }
-    ]
 
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {books.map((book, index) => (
-                <div className="m-auto mb-2 flex justify-center items-center" key={index} onClick={(e) => props.func(e, book)}>
-                    <Image
-                        loading="eager"
-                        alt="Card background"
-                        className={`z-0 w-[200px] h-full object-cover ${props.bid == book.bid && "rounded-lg border-slate-300 border-4"}`}
-                        src={book.coverImage}
-                    />
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const FrameworkTab = (props: any) => {
-    const frameworkList = [
-        {
-            name: null,
-            image: "/static/frame-none.png"
-        },
-        {
-            name: "top",
-            image: "/static/frame-top.png"
-        },
-        {
-            name: "left",
-            image: "/static/frame-left.png"
-        },
-        {
-            name: "right",
-            image: "/static/frame-right.png"
-        },
-        {
-            name: "bottom",
-            image: "/static/frame-bottom.png"
-        }
-    ]
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {frameworkList.map((framework, index) => (
-                <div style={{ margin: "auto", marginBottom: "10px" }} key={index} onClick={() => props.func(framework.name)}>
-                    <Image
-                        removeWrapper
-                        alt="Card background"
-                        className={`z-0 w-full h-full object-cover rounded-none ${props.framework == framework.name && "rounded-lg border-slate-300 border-4"}`}
-                        style={{ margin: "auto", width: "180px", height: "120px" }}
-                        src={framework.image}
-                    />
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const ModeTab = (props: any) => {
-    console.log()
-    // console.log();
-    var array_id = props.slideid - 1;
-    const modeList = [
-        {
-            mid: 0,
-            name: "一般模式",
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/1-normal.png"
-        },
-        {
-            mid: 1,
-            name: "專注模式",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/2-focus.png"
-        },
-        {
-            mid: 2,
-            name: "認讀模式",
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/3-read.png"
-        },
-        {
-            mid: 3,
-            name: "社交模式",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/mode/4-social.png"
-        }
-    ]
-    console.log("mode:",props.book);
-    console.log(array_id);
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {modeList.map((mode: any) => (
-                <div style={{ margin: "auto", marginBottom: "10px" }} className='text-center' key={mode.mid} onClick={() => props.func(mode.mid)}>
-                    <Image
-                        removeWrapper
-                        alt="Card background"
-                        className={`z-0 w-full h-full object-cover rounded-none ${props.book.page_config[array_id+1].mode == mode.mid && "rounded-lg border-slate-300 border-4"}`}
-                        src={mode.image}
-                        style={{ margin: "auto", width: "180px", height: "120px" }}
-                    />
-                                        <div><span className="text-white py-2">{mode.name}</span></div>
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const CategoryTab = (props: any) => {
-    var category: object[] = [];
-    if (props.type && props.type === "parent") {
-        category = [
-            {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
-                "categ_name": "專注閱讀",
-                cid: 0
-            },
-            {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
-                "categ_name": "社交學習",
-                cid: 1
-            },
-            {
-                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
-                "categ_name": "語言理解",
-                cid: 2
-            },
-            {
-                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
-                "categ_name": "讀寫學習",
-                cid: 3
-            }
-        ]
-    }
-    else if (props.type && props.type === "child") {
-        category = [
-            {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
-                "categ_name": "專注閱讀",
-                cid: 0
-            },
-            {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
-                "categ_name": "社交學習",
-                cid: 1
-            },
-            {
-                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
-                "categ_name": "語言理解",
-                cid: 2
-            },
-            {
-                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
-                "categ_name": "讀寫學習",
-                cid: 3
-            }
-        ]
-    }
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {category.map((categ: any) => (
-                <div className="m-auto text-white" key={categ.categ_name} onClick={() => props.func(props.type, categ.cid)}>
-                    <Card
-                        className="col-span-12 sm:col-span-4 bg-0 rounded-none"
-                        shadow="none"
-                        style={{
-                            margin: "auto",
-                            width: "180px",
-                            marginBottom: "10px"
-                        }}>
-                        <Image
-                            removeWrapper
-                            alt="Card background"
-                            className="z-0 w-full h-[120px] object-cover rounded-none"
-                            src={categ.image}
-                        />
-                        <CardHeader className="pb-0 pt-2 px-4 flex-col items-center ">
-                            <span className="text-large text-white">{categ.categ_name}</span>
-                        </CardHeader>
-                    </Card>
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const MissionTab = (props: any) => {
-    const parent_missions = [
-        {
-            mid: 0,
-            cid: [0, 2],
-            target: "parent",
-            text: "留意子女專注的位置",
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png"
-        },
-        {
-            mid: 1,
-            cid: [0, 2],
-            target: "parent",
-            text: "留意子女專注的位置",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png"
-        },
-        {
-            mid: 2,
-            cid: [1],
-            target: "parent",
-            text: "留意子女專注",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png"
-        },
-        {
-            mid: 3,
-            cid: [3],
-            target: "parent",
-            text: "留意子女專注的位置",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png"
-        }
-    ]
-    const child_missions = [
-        {
-            mid: 0,
-            cid: [0, 2],
-            target: "child",
-            text: "ask your parent!",
-            image: "/static/read-read.png"
-        },
-        {
-            mid: 1,
-            cid: [0, 2],
-            target: "child",
-            text: "child mission 2!",
-            image: "/static/read-read.png"
-        },
-        {
-            mid: 2,
-            cid: [1],
-            target: "child",
-            text: "mission3!",
-            image: "/static/read-read.png"
-        },
-        {
-            mid: 3,
-            cid: [3],
-            target: "child",
-            text: "mission4!",
-            image: "/static/read-read.png"
-        }
-    ]
-    var missions = props.type == "parent" ? parent_missions : child_missions
-    const filtered_missions = missions.filter(mission => mission.cid.includes(props.category));
 
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {filtered_missions.map((mission, index) => (
-                <div style={{ margin: "auto", marginBottom: "10px" }} key={uuidv4()} onClick={() => { props.func({ ...mission, id: uuidv4(), initialPosition: { x: 0, y: 0 }, text: mission.text }); }}>
-                    <Card
-                        className="col-span-12 sm:col-span-4 bg-0 rounded-none"
-                        shadow="none"
-                        style={{
-                            margin: "auto",
-                            width: "180px",
-                            marginBottom: "10px"
-                        }}>
-                        <Image
-                            removeWrapper
-                            alt="Card background"
-                            className="z-0 w-full h-[120px] object-cover rounded-none"
-                            src={mission.image}
-                        />
-                        <CardHeader className="pb-0 pt-2 px-4 flex-col items-center text-white ">
-                            <span className=''>{mission.text}</span>
-                        </CardHeader>
-                    </Card>
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const OuterframeTab = (props: any) => {
-    var frames = [
-        {
-            fid: 0,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-1.png"
-        },
-        {
-            fid: 1,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-2.png"
-        },
-        {
-            fid: 0,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-3.png"
-        },
-        {
-            fid: 1,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-4.png"
-        },
-        {
-            fid: 0,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/yellow-5.png"
-        },
-        {
-            fid: 1,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-1.png"
-        },
-        {
-            fid: 0,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-2.png"
-        },
-        {
-            fid: 1,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-3.png"
-        },
-        {
-            fid: 0,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-4.png"
-        },
-        {
-            fid: 1,
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/frame/blue-5.png"
-        }
-    ]
-    return (
-        <ScrollShadow className="w-full h-[80vh]">
-            {frames.map((frame, index) => (
-                <div style={{ margin: "auto", marginBottom: "10px" }} key={index} onClick={() => { props.func(frame.image); }}>
-                    <Card
-                        className="col-span-12 sm:col-span-4 bg-0 rounded-none"
-                        shadow="none"
-                        style={{
-                            margin: "auto",
-                            width: "180px",
-                            marginBottom: "10px"
-                        }}>
-                        <Image
-                            removeWrapper
-                            alt="Card background"
-                            className="z-0 w-full h-[120px] object-cover rounded-none object-contain"
-                            src={frame.image}
-                        />
-                    </Card>
-                </div>
-            ))}
-        </ScrollShadow>
-    )
-}
 
-const ToolsView = (props: any) => {
-    return (
-        <>
-            <div className='w-full  pt-[3rem]'>
-                <div onClick={()=>props.func("tools/avatar")} className="m-auto text-center w-[180px] mb-1">
-                    <Image
-                        removeWrapper
-                        alt="Card background"
-                        className="z-0 w-full h-[120px] object-cover rounded-none"
-                        src="/static/mode-normal.png"
-                    />
-                    <div className="my-2 text-white"><span>自訂角色</span></div>
-                </div>
-                <div onClick={()=>props.func("tools/chatbot")} className="m-auto text-center w-[180px] mb-1">
-                    <Image
-                        removeWrapper
-                        alt="Card background"
-                        className="z-0 w-full h-[120px] object-cover rounded-none"
-                        src="/static/mode-normal.png"
-                    />
-                    <div className="my-2 text-white"><span>Chatbot</span></div>
-                </div>
-            </div>
-        </>
-    );
-}
+
+
+

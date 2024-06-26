@@ -7,7 +7,8 @@ import { useSearchParams } from 'next/navigation';
 import * as z from 'zod';
 import { useState } from 'react';
 import { Input, Button, Spacer, Card } from '@nextui-org/react';
-
+import { useRouter } from 'next/navigation'
+import { toast ,Toaster } from 'react-hot-toast'
 const formSchema = z.object({
   email: z.string().email({ message: 'Enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }).max(16, { message: 'Password must be within 16 characters' })
@@ -28,31 +29,56 @@ export default function UserAuthForm() {
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-
+  const router = useRouter()
+  
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
     try {
       const result = await signIn('email-login', {
         email: data.email,
         password: data.password,
-        callbackUrl: callbackUrl ?? '/home'
-      });
+        // callbackUrl: callbackUrl ?? '/home'
+        redirect: false
+      })
+    //       .then(({ ok, error }) => {
+    //     if(error){
+
+    //     }
+    //     toast('Login失敗');
+    //     if (ok) {
+
+    //       console.log("Ok");
+    //         router.push("/home");
+    //         toast.success('Login success');
+    //     } else {
+    //         console.log(error);
+    //         console.log("Login失敗");
+    //         toast('Login失敗');
+    //         // toast("Credentials do not match!", { type: "error" });
+    //     }
+    // })
+      
       if (!result?.error) {
+        toast.success('Login success');
         // Handle successful authentication (e.g., redirect)
+        router.push("/home");
         console.log('Successfully signed in:', result);
       } else {
+        toast('Login失敗');
         // Handle authentication error
-        console.log('Sign-in error:', result.error);
+        console.log('Sign-in error:', result);
       }
     } catch (error) {
       console.log('Sign-in error:', error);
     } finally {
       setLoading(false);
     }
+    
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Toaster/>
       <Card>
         <Card>
           <h3>Login</h3>
