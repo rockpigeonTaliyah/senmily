@@ -57,7 +57,7 @@ export default function UserAuthForm() {
     //         // toast("Credentials do not match!", { type: "error" });
     //     }
     // })
-      
+      console.log(result);
       if (!result?.error) {
         toast.success('Login success');
         // Handle successful authentication (e.g., redirect)
@@ -66,7 +66,7 @@ export default function UserAuthForm() {
       } else {
         toast('Login失敗');
         // Handle authentication error
-        console.log('Sign-in error:', result);
+        console.log('Sign-in error:', result.error);
       }
     } catch (error) {
       console.log('Sign-in error:', error);

@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
           return NextResponse.json({ error: 'Failed to fetch data from API' }, { status: apiResponse.status });
         }
         const data = await apiResponse.json();
-        console.log('API response data:', data);
+        console.log('API response data:', data);  
     
         return NextResponse.json(data);
       } catch (error) {

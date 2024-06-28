@@ -1,36 +1,39 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useImperativeHandle,
-  forwardRef
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Button, Image } from "@nextui-org/react";
 import useEmblaCarousel from 'embla-carousel-react';
 import { NextButton, PrevButton, usePrevNextButtons } from './EmblaCarouselArrowButtons';
 import DraggableArea, { DraggableAreaHandles } from '@/app/ui/dnd/DraggableArea';
-import { PageConfig, Mission } from '@/type/Page';
+import { Mission } from '@/type/Page'; // No more PageConfig
 import "./embla.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
+import { v4 as uuidv4 } from 'uuid';
+import { zIndex } from 'html2canvas/dist/types/css/property-descriptors/z-index';
 
 type PropType = {
-  slides: {
-    page_config: PageConfig[];
-  };
+  slides: Array<{
+      pictures: any[]; // assuming pictures is an array of objects or a custom type
+      text: string; // assuming text is string
+      image: string; // assuming image is a string representing the image path
+      framework: string; // Add framework property 
+      mode: number; // Add mode property
+      user_image: string; // Add user_image property (if needed)
+      missions: Mission[]; // Missions are now directly within the page object
+    }>;
+  
   onChange: (selectedIndex: number) => void;
   onItemsChange: (pageIndex: number, updatedItems: Mission) => void;
-  setLoading:(status:boolean) => void;
+  setLoading: (status: boolean) => void;
 };
+
 
 export type EmblaCarouselHandles = {
   updateSlideItemsAttributes: (index: number, attributes: Partial<Mission>[]) => void;
 };
 
 const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) => {
-  const { slides, onChange, onItemsChange , setLoading} = props;
-  const slidesCount = slides.page_config.length;
+  const { slides, onChange, onItemsChange, setLoading } = props;
+  const slidesCount = slides.length;
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: "x",
     skipSnaps: false
@@ -45,7 +48,6 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
   const onScroll = useCallback((embla) => {
     const progress = Math.max(0, Math.min(1, embla.scrollProgress()));
     const selected = embla.selectedScrollSnap();
-    // console.log("scrolling");
     setSelectedIndex(selected);
     onChange(selected);
     setScrollProgress(progress * 100);
@@ -53,7 +55,6 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
 
   useEffect(() => {
     if (!emblaApi) return;
-
     onScroll(emblaApi);
     emblaApi
       .on('reInit', onScroll)
@@ -73,17 +74,15 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
   };
 
   const handleExportResult = useCallback((index, result) => {
-    console.log("taert");
     onItemsChange(index, result);
-  },[]);
-  const onMissionUpdate= useCallback((index, result) => {
-    console.log("taert");
+  }, []);
+
+  const onMissionUpdate = useCallback((index, result) => {
     onItemsChange(index, result);
   }, [onItemsChange]);
   useEffect(() => {
-    // Initialize refs array with the correct length
-    setDraggableRefs(slides.page_config.map(() => React.createRef<DraggableAreaHandles>()));
-  },[]);
+    setDraggableRefs(slides.map(() => React.createRef<DraggableAreaHandles>()));
+  }, []);
 
   useImperativeHandle(ref, () => ({
     updateSlideItemsAttributes: (index: number, attributes: Partial<Mission>[]) => {
@@ -92,29 +91,31 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
       }
     }
   }));
-  
+
   return (
     <div className="embla grow justify-center">
       <div className="embla__viewport" ref={emblaRef}>
         <div className="embla__container">
-          {slides.page_config.map((value, index) => (
+          {slides.map((page, index) => (
             <div className="embla__slide" key={index}>
               <div className="embla__slide__number">
                 <DraggableArea
                   ref={draggableRefs[index]}
                   key={`draggable-${index}`}
-                  items={value.missions}
+                  items={page.missions} // Access missions directly from the page object
                   onExport={(result) => handleExportResult(index, result)}
-                  onMissionUpdate={(item)=>{onMissionUpdate(index,item)}}
+                  onMissionUpdate={(item) => {
+                    onMissionUpdate(index, item)
+                  }}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                 >
                   <Image
                     removeWrapper
                     alt="Card background"
-                    className="z-0 w-full h-full rounded-none slideimage "
-                    src={value.image || ""}
-                    style={{ zIndex: -1 }}
+                    className="z-0 w-full h-full rounded-none slideimage"
+                    src={page.image} // <-- Make sure this is the correct URL or file path 
+                    style={{zIndex:-1}}
                   />
                 </DraggableArea>
               </div>
@@ -126,7 +127,7 @@ const EmblaCarousel = forwardRef<EmblaCarouselHandles, PropType>((props, ref) =>
       <div className="embla__controls">
         <div className="embla__buttons">
           <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <span className="text-center">{selectedIndex+1} /{slidesCount}</span>
+          <span className="text-center">{selectedIndex + 1} /{slidesCount}</span>
           <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
         </div>
 

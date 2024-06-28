@@ -55,7 +55,7 @@ const authConfig: NextAuthConfig = {
                   accessToken: result.getAccessToken().getJwtToken(),
                   refreshToken: result.getRefreshToken().getToken(),
                   idToken: result.getIdToken().getJwtToken(),
-                  accessTokenExpires: result.getAccessToken().getExpiration(),
+                  accessTokenExpires: result.getAccessToken().getExpiration()* 1000,
                 };
                 resolve(token);
               },
@@ -80,13 +80,17 @@ const authConfig: NextAuthConfig = {
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           idToken: user.idToken,
-          accessTokenExpires: user.accessTokenExpires,
+          accessTokenExpires: user.accessTokenExpires ,
         };
       }
-      return token;
-      // if (Date.now() < token.accessTokenExpires) {
-      //   return token;
-      // }
+      // return token;
+      console.log(Date.now())
+      console.log(token.accessTokenExpires);
+      console.log((Date.now() < token.accessTokenExpires));
+      if (Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+      return null
       // return refreshCognitoToken(token);
     },
     session: async ({ session, token }: { session: any, token: any }) => {

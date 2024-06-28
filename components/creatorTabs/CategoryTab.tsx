@@ -6,22 +6,22 @@ export const CategoryTab = (props: any) => {
     if (props.type && props.type === "parent") {
         category = [
             {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
+                "image": "/category/1-focus.png",
                 "categ_name": "專注閱讀",
                 cid: 0
             },
             {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
+                "image": "/category/2-social.png",
                 "categ_name": "社交學習",
                 cid: 1
             },
             {
-                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
+                "image":"/category/3-language.png",
                 "categ_name": "語言理解",
                 cid: 2
             },
             {
-                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
+                "image":  "/category/4-read.png",
                 "categ_name": "讀寫學習",
                 cid: 3
             }
@@ -30,22 +30,22 @@ export const CategoryTab = (props: any) => {
     else if (props.type && props.type === "child") {
         category = [
             {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png",
+                "image": "/category/1-focus.png",
                 "categ_name": "專注閱讀",
                 cid: 0
             },
             {
-                "image": "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png",
+                "image": "/category/2-social.png",
                 "categ_name": "社交學習",
                 cid: 1
             },
             {
-                "image":"https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png",
+                "image":"/category/3-language.png",
                 "categ_name": "語言理解",
                 cid: 2
             },
             {
-                "image":  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png",
+                "image":  "/category/4-read.png",
                 "categ_name": "讀寫學習",
                 cid: 3
             }

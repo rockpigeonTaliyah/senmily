@@ -16,7 +16,7 @@ export async function middleware(req: NextRequest) {
 
   console.log("Request Path:", req.nextUrl.pathname);
   console.log("isAuthenticated:", isAuthenticated);
-
+  console.log(token);
   // Handle authenticated users
   if (isAuthenticated) {
     // Redirect authenticated users from the login page to the home page

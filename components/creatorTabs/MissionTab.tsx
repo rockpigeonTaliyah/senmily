@@ -8,28 +8,28 @@ export const MissionTab = (props: any) => {
             cid: [0, 2],
             target: "parent",
             text: "留意子女專注的位置",
-            image: "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/1-focus.png"
+            image: "/category/1-focus.png"
         },
         {
             mid: 1,
             cid: [0, 2],
             target: "parent",
             text: "留意子女專注的位置",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/2-social.png"
+            image:  "/category/2-social.png"
         },
         {
             mid: 2,
             cid: [1],
             target: "parent",
             text: "留意子女專注",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/3-language.png"
+            image:  "/category/3-language.png"
         },
         {
             mid: 3,
             cid: [3],
             target: "parent",
             text: "留意子女專注的位置",
-            image:  "https://senmily.s3.ap-southeast-1.amazonaws.com/resources/target/4-read.png"
+            image:  "/category/4-read.png"
         }
     ]
     const child_missions = [

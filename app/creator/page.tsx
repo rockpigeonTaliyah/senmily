@@ -38,41 +38,63 @@ export default function Page() {
     });
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const UpdateBook = (e: any, book: any) => {
+    const UpdateBook = (e, book) => {
         console.log("Book.pages: ", book.pages);
+      
+        // Define the base URL once to avoid typos and make easier future modifications
+        const baseUrl = "https://senmily-resource.s3.ap-southeast-1.amazonaws.com/";
+      
+        // Update and reuse updatedPages for both pages and page_config in the final object
+        const updatedPages = book.pages.map((page, pageIndex) => {
+          // Check for pictures existence and length
+          const hasPictures = page.pictures && page.pictures.length > 0;
+      
+          // Update pictures with prefixed URLs if they exist
+          const updatedPictures = hasPictures
+            ? page.pictures.map((picture) => ({
+                ...picture,
+                image: `${baseUrl}${picture.image}`,
+              }))
+            : [];
+      
+          // Simplify the access to the first picture's image and mode
+          const firstUpdatedPicture = updatedPictures[0] || {}; // Fallback to an empty object
+          console.log("firstUpdatedPicture:", firstUpdatedPicture);
+      
+          // Preparing the return structure for each page
+          return {
+            // Updated page structure for storing modified pictures
+            ...page,
+            pictures: updatedPictures,
+            // Include additional page config used previously in page_config if necessary
+            framework: null, // Add framework here (if applicable)
+            mode: firstUpdatedPicture.mode || 0, // Add mode here if needed
+            user_image: null, // Add user_image
+            image: firstUpdatedPicture.image || "", // Add main image
+            missions: [{
+              cid: [],
+              mid: 0,
+              id: uuidv4(),
+              initialPosition: {
+                x: 388,
+                y: 590,
+              },
+              frame: "",
+              image: "", // Add mission image
+              target: "",
+              text: page.text || "", // Adding guard for text existence
+            }],
+          };
+        });
+        console.log("updatedPages:", updatedPages);
         setBook((originalBook) => ({
-            ...originalBook,
-            bid: book.id,
-            title: "",
-            coverImage: book.coverImage,
-            pages: book.pages, // Assuming you still want to keep the original pages structure as well
-            page_config: book.pages.map((page: any) => {
-                // Assuming here that 'pictures' is the correct field instead of 'modes' in the original structure
-                // Also, making sure that there's at least one picture in the array before trying to access it
-                const firstPicture = page.pictures && page.pictures.length > 0 ? page.pictures[0].image : "";
-    
-                return {
-                    framework: null,
-                    mode: page.pictures && page.pictures.length > 0 ? page.pictures[0].mode : 0,
-                    user_image: null,
-                    image: firstPicture, // Use the image from the first picture
-                    missions: [{
-                        cid : [],
-                        mid : 0,
-                        id: uuidv4(),
-                        initialPosition: {
-                            x: 388,
-                            y: 590,
-                        },
-                        frame: "",
-                        image: "", // If you need to use a specific picture here, define it
-                        target: "",
-                        text: page.text, // Make sure 'text' field exists in your 'page'
-                    }],
-                };
-            }),
+          ...originalBook,
+          bid: book.id,
+          title: "", // Ensure this is intentionally reset
+          coverImage: book.coverImage,
+          pages: updatedPages, 
         }));
-    };
+      };
 
     // const UpdateFramework = (frame: any) => {
     //     setBook((prevBook) => ({
@@ -82,16 +104,48 @@ export default function Page() {
     //         ),
     //     }));
     // };
+    // const UpdateMode = (mode: any) => {
+    //     // page.pictures[0].mode
+    //     setBook((prevBook) => ({
+    //         ...prevBook,
+    //         page_config: prevBook.page_config.map((config: any, index) =>
+    //             index === currentSlide ? { ...config, mode, image: prevBook.pages[currentSlide].modes[mode].image } : config
+    //         ),
+    //     }));
+    // };
 
+    // const filteredmode = pages[currentSlide].pictures.filter((pic) => pic.mode === mode);
+    // console.log("filteredmode:",filteredmode);
+    // if (pages[currentSlide] && pages[currentSlide].pictures && filteredmode.length > 0) {
+    //     const modeImage = filteredmode[0].image;
     const UpdateMode = (mode: any) => {
-        setBook((prevBook) => ({
-            ...prevBook,
-            page_config: prevBook.page_config.map((config: any, index) =>
-                index === currentSlide ? { ...config, mode, image: prevBook.pages[currentSlide].modes[mode].image } : config
-            ),
-        }));
-    };
-
+        setBook((prevBook) => {
+          // Clone the pages array to avoid direct mutation
+          const pages = [...prevBook.pages];
+          const filteredmode = pages[currentSlide].pictures.filter((pic) => pic.mode === mode);
+          // Make sure the current page exists
+          if (pages[currentSlide]) {
+            // Directly update the current page's 'mode' property
+            pages[currentSlide].mode = mode;
+            const modeImage = filteredmode[0].image;
+            // If you need to update the 'image' based on the selected mode, do so here
+            // For example: 
+            // const modeImage =  'some logic to find the mode image url';  
+            if (modeImage) {
+              pages[currentSlide].image = modeImage;
+            }
+      
+            // Return the updated book object with the modified 'pages' array
+            return {
+              ...prevBook,
+              pages: pages,
+            };
+          }
+      
+          // Return unchanged book if the current page doesn't exist
+          return prevBook;
+        });
+      };
     const UpdateMission = (mission: Mission) => {
         if (mission.target === "parent") set_parent_mission_selectKey("2");
         if (mission.target === "child") set_children_mission_selectKey("2");
@@ -100,44 +154,58 @@ export default function Page() {
     };
 
     const UpdateOuterFrame = (outerframe: any) => {
+        console.log("outerframe");
         if (Object.keys(focusMission).length === 0) return;
-
-        const updatedFocusMission = {
-            ...focusMission,
-            frame: outerframe,
+      
+        // Create a new mission object 
+        const newMission = {
+          ...focusMission,
+          frame: outerframe,
         };
+      
+        // Update the current page's missions array
+        setBook((prevBook) => {
+          const pages = [...prevBook.pages];
+      
+          if (pages[currentSlide]) {
+            pages[currentSlide].missions = [
+              ...pages[currentSlide].missions, 
+              newMission, 
+            ];
+            return {
+              ...prevBook,
+              pages: pages,
+            };
+          } else {
+            return prevBook; // Return the unchanged book if the page doesn't exist
+          }
+        });
+      
+        setFocusMission({}); 
+      };
 
-        const missions = [...book.page_config[currentSlide].missions, updatedFocusMission];
-
-        setBook((prevBook) => ({
-            ...prevBook,
-            page_config: prevBook.page_config.map((config, index) =>
-                index === currentSlide ? { ...config, missions } : config
-            ),
-        }));
-        setFocusMission({})
-    };
-
-    const handleItemsChange = useCallback((pageIndex: number, updatedItem: Mission) => {
-      setBook((prevBook) => ({
-          ...prevBook,
-          page_config: prevBook.page_config.map((config, index) =>
-              index === pageIndex ? {
-                  ...config,
-                  missions: config.missions.map((mission) =>
-                      mission.id === updatedItem.id ? { ...mission, ...updatedItem } : mission
-                  )
-              } : config
-          ),
-      }));
-  }, []);
+      const handleItemsChange = useCallback((pageIndex: number, updatedItem: Mission) => {
+        setBook((prevBook) => {
+          const pages = [...prevBook.pages]; // Clone the pages array
+          
+          if (pages[pageIndex]) { // Check if the page exists
+            pages[pageIndex].missions = pages[pageIndex].missions.map((mission) =>
+              mission.id === updatedItem.id ? { ...mission, ...updatedItem } : mission
+            );
+            return {
+              ...prevBook,
+              pages: pages, // Update the pages array
+            };
+          } else {
+            return prevBook; // Return the unchanged book if the page doesn't exist
+          }
+        });
+      }, []);
   
 
     const handleSlideChange = (index: number) => {
-        // console.log("Slide changes : ",index-1);
         
         setCurrentSlide(index);
-        // console.log(book.page_config[currentSlide]);
     };
 
     const [page, setPage] = useState("creator");
@@ -151,7 +219,7 @@ export default function Page() {
 
     const saveBook = () => {
         var b = book;
-        b.pages = null;
+        // b.pages = null;
         // unset(b.pages);
         console.log("final book:",b);
         console.log("final book:", JSON.stringify(b));
@@ -284,8 +352,7 @@ export default function Page() {
                                 Export
                             </Button>
                         </div>
-                        {/* <Stage ref={stageRef}/> */}
-                        <EmblaCarousel  slides={book} onChange={handleSlideChange} onItemsChange={handleItemsChange} setLoading={setLoading}/>
+                        <EmblaCarousel  slides={book.pages} onChange={handleSlideChange} onItemsChange={handleItemsChange} setLoading={setLoading}/>
                     </>
                     }
                 </div>
@@ -294,7 +361,6 @@ export default function Page() {
     )
 }
 
-// Other supporting tabs...
 
 const generatePDF = async () => {
     const doc = new jsPDF({

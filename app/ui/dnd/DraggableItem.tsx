@@ -30,6 +30,7 @@ function DraggableItem({ id, children, initialPosition, containerRef ,frame}) {
     transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
     backgroundImage:`url(${frame})`,
     aspectRatio:"4 / 3",
+    backgroundPosition:"center"
   };
 
   return (
